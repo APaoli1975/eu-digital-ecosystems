@@ -18,6 +18,7 @@ The project aims to explore the structure, performance, and interconnections of 
 
 ## 🗂 Repository Structure
 
+```
 eu-digital-ecosystems/
 ├── data_raw/             # Original raw datasets (not modified)
 ├── data_clean/           # Processed/cleaned datasets ready for analysis
@@ -30,7 +31,7 @@ eu-digital-ecosystems/
 ├── .gitattributes
 ├── LICENSE
 └── README.md
-
+```
 
 
 ---
