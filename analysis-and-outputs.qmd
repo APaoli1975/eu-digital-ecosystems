@@ -1,0 +1,90 @@
+---
+title: "Analysis & Outputs — Tallinn/Barcelona"
+author: "Andrea Paoli"
+format:
+  html:
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: source
+---
+
+# 1. Setup
+
+This notebook generates **reusable figures and tables** for insertion into the Word thesis.\
+Outputs are saved to `figures/` and `outputs/`.
+
+```{r}
+#| label: setup
+pkgs <- c(
+  "tidyverse","janitor","broom","modelsummary","gt",
+  "readr","readxl","openxlsx","jsonlite",
+  "sf","tmap","rmapshaper","eurostat",
+  "plotly","DT"
+)
+missing <- setdiff(pkgs, rownames(installed.packages()))
+if (length(missing)) {
+  stop("Missing packages: ", paste(missing, collapse = ", "),
+       "\nInstall them in the R Console with install.packages(...) and re-render.")
+}
+invisible(lapply(pkgs, library, character.only = TRUE))
+
+# Define the subfolders for the project
+subfolders <- c("data_raw", "data_clean", "figures", "outputs", "scripts", "docs")
+
+# Create them if missing
+for (folder in subfolders) {
+  if (!dir.exists(folder)) dir.create(folder)
+}
+```
+
+# 2. Data Ingestion
+
+```{r}
+data <- mtcars |>
+  janitor::clean_names() |>
+  dplyr::mutate(model = rownames(mtcars))
+readr::write_csv(data, "outputs/example_data.csv")
+
+library(ggplot2)
+p <- ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Weight", y = "Miles per Gallon")
+ggsave("figures/example_scatter.png", plot = p, width = 6, height = 4, dpi = 300)
+p
+
+library(gt)
+summary_tbl <- mtcars |>
+  dplyr::summarise(mean_mpg = mean(mpg), mean_hp = mean(hp), n = dplyr::n()) |>
+  gt() |>
+  tab_header(title = md("**Descriptive Summary**"))
+readr::write_csv(mtcars, "outputs/example_table_data.csv")
+summary_tbl
+```
+
+------------------------------------------------------------------------
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
