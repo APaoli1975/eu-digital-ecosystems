@@ -6,13 +6,6 @@
 **Date:** August 2025
 
 ---
-# eu-digital-ecosystems
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-![R](https://img.shields.io/badge/R-4.5.1-blue.svg)
-![Quarto](https://img.shields.io/badge/Quarto-1.7.33-lightgrey.svg)
-![Last Commit](https://img.shields.io/github/last-commit/APaoli1975/eu-digital-ecosystems?color=green)
-
 
 ## 📖 Overview
 
@@ -20,6 +13,15 @@ This repository contains all files, datasets, scripts, and outputs related to my
 **"EU Digital Ecosystems: Data-Driven Insights for Policy and Strategy"**.
 
 The project aims to explore the structure, performance, and interconnections of digital ecosystems across the European Union, with case studies focusing on Tallinn and Barcelona. The analysis combines economic, technological, and policy perspectives, using open statistical data and reproducible methods in R and Quarto.
+
+---
+
+# eu-digital-ecosystems
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![R](https://img.shields.io/badge/R-4.5.1-blue.svg)
+![Quarto](https://img.shields.io/badge/Quarto-1.7.33-lightgrey.svg)
+![Last Commit](https://img.shields.io/github/last-commit/APaoli1975/eu-digital-ecosystems?color=green)
 
 ---
 
