@@ -6,6 +6,13 @@
 **Date:** August 2025
 
 ---
+# eu-digital-ecosystems
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![R](https://img.shields.io/badge/R-4.5.1-blue.svg)
+![Quarto](https://img.shields.io/badge/Quarto-1.7.33-lightgrey.svg)
+![Last Commit](https://img.shields.io/github/last-commit/APaoli1975/eu-digital-ecosystems?color=green)
+
 
 ## 📖 Overview
 
