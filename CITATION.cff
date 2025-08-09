@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "EU Digital Ecosystems — Executive MBA Thesis (Analysis Code & Materials)"
+authors:
+  - family-names: Paoli
+    given-names: Andrea
+version: 1.0.0
+doi: 10.5281/zenodo.16786258
+date-released: 2025-08-09
+repository-code: "https://github.com/APaoli1975/eu-digital-ecosystems"
+license: MIT
