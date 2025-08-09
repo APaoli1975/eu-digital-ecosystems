@@ -1,9 +1,9 @@
 # EU Digital Ecosystems — Executive MBA Thesis
 
 **Author:** Andrea Paoli  
-**Programme:** Executive MBA — Final Thesis  
-**Institution:** [Your University Name]  
-**Date:** [Month Year]  
+**Programme:** MBA Leadership — Negotiated Learning Project  
+**Institution:** International Business School - University of Lincoln
+**Date:** August 2025
 
 ---
 
