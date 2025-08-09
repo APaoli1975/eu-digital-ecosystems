@@ -1,0 +1,21 @@
+# Ensure consistent line endings (LF in repo, auto convert on checkout)
+* text=auto
+
+# Treat these as text
+*.qmd text
+*.R text
+*.Rmd text
+*.md text
+*.yml text
+*.yaml text
+*.csv text
+*.tsv text
+
+# Keep binary files untouched
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
