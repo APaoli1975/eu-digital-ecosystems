@@ -1,4 +1,70 @@
-.Rproj.user
+############
+# R / RStudio
+############
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
+
+# Keep the .Rproj file (useful for collaborators)
+# *.Rproj  <-- DO NOT ignore
+
+########
+# renv
+########
+renv/library/
+renv/staging/
+.Rprofile
+
+##############
+# Quarto/Knitr
+##############
+# Quarto execution cache (freeze + .qrt)
+_freeze/
+*.knit.md
+*.utf8.md
+
+# Knitr/LaTeX/Pandoc artefacts
+*_cache/
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.lot
+*.lof
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Quarto site artifacts (if you ever render a site)
+_site/
+.quarto/
+
+################
+# Python/Jupyter
+################
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+###########
+# OS cruft
+###########
+.DS_Store
+Thumbs.db
+desktop.ini
+
+#########################
+# Generated project output
+#########################
+# (Uncomment to keep the repo clean; comment out if you want to track them)
+figures/
+outputs/
+
+#####################
+# Logs & local secrets
+#####################
+*.log
+.env
