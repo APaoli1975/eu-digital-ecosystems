@@ -19,16 +19,18 @@ The project aims to explore the structure, performance, and interconnections of 
 ## 🗂 Repository Structure
 
 eu-digital-ecosystems/
-├── data_raw/ # Original raw datasets (not modified)
-├── data_clean/ # Processed/cleaned datasets ready for analysis
-├── figures/ # Generated figures and charts (ignored in Git)
-├── outputs/ # Tables, reports, and other generated outputs (ignored in Git)
-├── scripts/ # R scripts for analysis and data preparation
-├── docs/ # Draft chapters, notes, and Word exports
-├── analysis-and-outputs.qmd # Quarto notebook for analysis
+├── data_raw/             # Original raw datasets (not modified)
+├── data_clean/           # Processed/cleaned datasets ready for analysis
+├── figures/              # Generated figures and charts (ignored in Git)
+├── outputs/              # Tables, reports, and other generated outputs (ignored in Git)
+├── scripts/              # R scripts for analysis and data preparation
+├── docs/                 # Draft chapters, notes, and Word exports
+├── analysis-and-outputs.qmd  # Quarto notebook for analysis
 ├── .gitignore
 ├── .gitattributes
+├── LICENSE
 └── README.md
+
 
 
 ---
