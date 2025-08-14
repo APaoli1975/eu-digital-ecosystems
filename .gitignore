@@ -63,8 +63,13 @@ desktop.ini
 figures/
 outputs/
 
+# Ignore raw data files
+data_raw/
+
 #####################
 # Logs & local secrets
 #####################
 *.log
 .env
+data_raw/
+data_raw/
