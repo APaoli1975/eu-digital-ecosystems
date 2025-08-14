@@ -31,7 +31,6 @@ The project aims to explore the structure, performance, and interconnections of 
 
 ```
 eu-digital-ecosystems/
-├── data_raw/             # Original raw datasets (not modified)
 ├── data_clean/           # Processed/cleaned datasets ready for analysis
 ├── figures/              # Generated figures and charts (ignored in Git)
 ├── outputs/              # Tables, reports, and other generated outputs (ignored in Git)
