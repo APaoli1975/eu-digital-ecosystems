@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Quantitative Analysis — Tallinn vs Barcelona (Parametrised, Robust &amp; Transparent)</title>
+<title>Quantitative Analysis — Multi-City (Parametrised, Robust &amp; Transparent)</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -48,15 +48,13 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#setup-data-load" id="toc-setup-data-load" class="nav-link active" data-scroll-target="#setup-data-load">0) Setup &amp; Data Load</a></li>
   <li><a href="#sanity-completeness-checks" id="toc-sanity-completeness-checks" class="nav-link" data-scroll-target="#sanity-completeness-checks">1) Sanity &amp; Completeness Checks</a></li>
-  <li><a href="#robust-indicator-set-window-thresholds" id="toc-robust-indicator-set-window-thresholds" class="nav-link" data-scroll-target="#robust-indicator-set-window-thresholds">2) Robust Indicator Set (Window + Thresholds)</a></li>
-  <li><a href="#b-coverage-map-indicator-year-by-city-discreet" id="toc-b-coverage-map-indicator-year-by-city-discreet" class="nav-link" data-scroll-target="#b-coverage-map-indicator-year-by-city-discreet">2b) Coverage Map (Indicator × Year, by City — Discreet)</a></li>
-  <li><a href="#descriptive-exploration-time-series" id="toc-descriptive-exploration-time-series" class="nav-link" data-scroll-target="#descriptive-exploration-time-series">3) Descriptive Exploration (Time Series)</a></li>
-  <li><a href="#cross-city-comparison-levels-differences" id="toc-cross-city-comparison-levels-differences" class="nav-link" data-scroll-target="#cross-city-comparison-levels-differences">4) Cross-City Comparison (Levels &amp; Differences)</a></li>
-  <li><a href="#normalisation-for-comparability-index-100-at-base-year" id="toc-normalisation-for-comparability-index-100-at-base-year" class="nav-link" data-scroll-target="#normalisation-for-comparability-index-100-at-base-year">5) Normalisation for Comparability (Index = 100 at Base Year)</a></li>
-  <li><a href="#association-diagnostics-adaptive-informative" id="toc-association-diagnostics-adaptive-informative" class="nav-link" data-scroll-target="#association-diagnostics-adaptive-informative">6) Association Diagnostics (Adaptive &amp; Informative)</a></li>
-  <li><a href="#quantitative-synthesis-short-narrative" id="toc-quantitative-synthesis-short-narrative" class="nav-link" data-scroll-target="#quantitative-synthesis-short-narrative">7) Quantitative Synthesis (Short Narrative)</a></li>
-  <li><a href="#indicator-dictionary-auto-generated" id="toc-indicator-dictionary-auto-generated" class="nav-link" data-scroll-target="#indicator-dictionary-auto-generated">Indicator Dictionary (Auto-generated)</a></li>
-  <li><a href="#exports-reproducibility" id="toc-exports-reproducibility" class="nav-link" data-scroll-target="#exports-reproducibility">Exports &amp; Reproducibility</a></li>
+  <li><a href="#robust-indicator-set" id="toc-robust-indicator-set" class="nav-link" data-scroll-target="#robust-indicator-set">2) Robust Indicator Set</a></li>
+  <li><a href="#b-coverage-map" id="toc-b-coverage-map" class="nav-link" data-scroll-target="#b-coverage-map">2b) Coverage Map</a></li>
+  <li><a href="#descriptive-exploration" id="toc-descriptive-exploration" class="nav-link" data-scroll-target="#descriptive-exploration">3) Descriptive Exploration</a></li>
+  <li><a href="#cross-city-differences" id="toc-cross-city-differences" class="nav-link" data-scroll-target="#cross-city-differences">4) Cross-City Differences</a></li>
+  <li><a href="#indexed-paths" id="toc-indexed-paths" class="nav-link" data-scroll-target="#indexed-paths">5) Indexed Paths</a></li>
+  <li><a href="#correlation-diagnostics" id="toc-correlation-diagnostics" class="nav-link" data-scroll-target="#correlation-diagnostics">6) Correlation Diagnostics</a></li>
+  <li><a href="#dictionary-metadata" id="toc-dictionary-metadata" class="nav-link" data-scroll-target="#dictionary-metadata">Dictionary &amp; Metadata</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="analysis-and-outputs.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
@@ -64,7 +62,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Quantitative Analysis — Tallinn vs Barcelona (Parametrised, Robust &amp; Transparent)</h1>
+<h1 class="title">Quantitative Analysis — Multi-City (Parametrised, Robust &amp; Transparent)</h1>
 </div>
 
 
@@ -83,14 +81,9 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="setup-data-load" class="level2">
 <h2 class="anchored" data-anchor-id="setup-data-load">0) Setup &amp; Data Load</h2>
-<p><strong>Data loaded.</strong> Cities: Barcelona, Tallinn. Full-span years: 1982–2024.<br>
-<strong>Analysis window:</strong> 2010–2024.<br>
-<strong>Robustness rules:</strong> ≥ 70% completeness <strong>and</strong> ≥ 5 non-missing years <strong>in each city</strong>.</p>
-<hr>
 </section>
 <section id="sanity-completeness-checks" class="level2">
 <h2 class="anchored" data-anchor-id="sanity-completeness-checks">1) Sanity &amp; Completeness Checks</h2>
-<p><strong>Purpose.</strong> Establish coverage before comparison to avoid biased inference.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -100,27 +93,24 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Narrative.</em> Figure 1 shows relatively better coverage for innovation outputs and thinner coverage for some SME-finance proxies. We prioritise well-covered indicators for cross-city comparisons and treat sparse finance indicators descriptively.</p>
-<hr>
 </section>
-<section id="robust-indicator-set-window-thresholds" class="level2">
-<h2 class="anchored" data-anchor-id="robust-indicator-set-window-thresholds">2) Robust Indicator Set (Window + Thresholds)</h2>
-<p><strong>Rule.</strong> An indicator is <strong>robust</strong> if, within 2010–2024, <strong>each city</strong> has completeness ≥ 70% <strong>and</strong> ≥ 5 non-missing years.</p>
-<p><strong>Robust indicators (count):</strong> 2<br>
-<strong>Preview:</strong></p>
+<section id="robust-indicator-set" class="level2">
+<h2 class="anchored" data-anchor-id="robust-indicator-set">2) Robust Indicator Set</h2>
+</section>
+<section id="b-coverage-map" class="level2">
+<h2 class="anchored" data-anchor-id="b-coverage-map">2b) Coverage Map</h2>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 1
-  indicator                   
-  &lt;chr&gt;                       
-1 VentureCapital_pct_GDP      
-2 HighGrowth_enterprises_share</code></pre>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
-<hr>
+</div>
 </section>
-<section id="b-coverage-map-indicator-year-by-city-discreet" class="level2">
-<h2 class="anchored" data-anchor-id="b-coverage-map-indicator-year-by-city-discreet">2b) Coverage Map (Indicator × Year, by City — Discreet)</h2>
+<section id="descriptive-exploration" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-exploration">3) Descriptive Exploration</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -130,10 +120,9 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<hr>
 </section>
-<section id="descriptive-exploration-time-series" class="level2">
-<h2 class="anchored" data-anchor-id="descriptive-exploration-time-series">3) Descriptive Exploration (Time Series)</h2>
+<section id="cross-city-differences" class="level2">
+<h2 class="anchored" data-anchor-id="cross-city-differences">4) Cross-City Differences</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -143,11 +132,9 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Narrative.</em> Figure 3 suggests a pattern of Barcelona’s earlier strength with evidence of Tallinn’s catch-up on several innovation indicators.</p>
-<hr>
 </section>
-<section id="cross-city-comparison-levels-differences" class="level2">
-<h2 class="anchored" data-anchor-id="cross-city-comparison-levels-differences">4) Cross-City Comparison (Levels &amp; Differences)</h2>
+<section id="indexed-paths" class="level2">
+<h2 class="anchored" data-anchor-id="indexed-paths">5) Indexed Paths</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -157,12 +144,9 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Narrative.</em> In several indicators the gap narrows toward the end of the window, consistent with a convergence/catch-up dynamic.</p>
-<hr>
 </section>
-<section id="normalisation-for-comparability-index-100-at-base-year" class="level2">
-<h2 class="anchored" data-anchor-id="normalisation-for-comparability-index-100-at-base-year">5) Normalisation for Comparability (Index = 100 at Base Year)</h2>
-<p><strong>Purpose.</strong> Compare relative growth paths independent of scale. We index each indicator by city to <strong>100 at its first non-missing year</strong> within the window.</p>
+<section id="correlation-diagnostics" class="level2">
+<h2 class="anchored" data-anchor-id="correlation-diagnostics">6) Correlation Diagnostics</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -171,109 +155,31 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 </div>
-</div>
-<p><em>Narrative.</em> Figure 5 reveals relative momentum: Tallinn often shows steeper indexed growth, while Barcelona exhibits steadier, less volatile paths.</p>
-<hr>
-</section>
-<section id="association-diagnostics-adaptive-informative" class="level2">
-<h2 class="anchored" data-anchor-id="association-diagnostics-adaptive-informative">6) Association Diagnostics (Adaptive &amp; Informative)</h2>
-<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-8-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-8-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-8-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p><em>Narrative.</em> With only two robust indicators, heatmaps are uninformative; the adaptive diagnostics substitute standardised co-movement, scatter with linear fits, and rolling correlation to reveal direction, strength, and stability of association. For 3+ indicators, we retain heatmaps and add a pairwise scatter grid.</p>
-<hr>
 </section>
-<section id="quantitative-synthesis-short-narrative" class="level2">
-<h2 class="anchored" data-anchor-id="quantitative-synthesis-short-narrative">7) Quantitative Synthesis (Short Narrative)</h2>
-<p><em>Taken together, Figures 3–6 suggest the following.</em><br>
-(1) Indicators meeting robustness criteria provide a clean basis for comparison; sparse SME-finance proxies remain descriptive.<br>
-(2) Barcelona’s earlier advantage is visible in levels, while Tallinn displays steeper <strong>indexed growth</strong> (Figure 5) and higher <strong>episodic momentum</strong> in some periods.<br>
-(3) Cross-city differences (Figure 4) tend to narrow toward the end of the window on several indicators, consistent with <strong>catch-up</strong>.<br>
-(4) Association diagnostics (Section 6) show synchronisation in standardised movements and positive city-wise slopes, with time-varying correlation indicating phases of stronger coupling likely coincident with policy cycles; these will be triangulated against policy timelines in the qualitative chapter.</p>
-<hr>
-</section>
-<section id="indicator-dictionary-auto-generated" class="level2">
-<h2 class="anchored" data-anchor-id="indicator-dictionary-auto-generated">Indicator Dictionary (Auto-generated)</h2>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 2
-  indicator                    source_hint                    
-  &lt;chr&gt;                        &lt;chr&gt;                          
-1 HighGrowth_enterprises_share Eurostat (innovation/high-tech)
-2 HighTech_patents             Eurostat (innovation/high-tech)
-3 VentureCapital_pct_GDP       OECD (FUA/SME finance)         </code></pre>
-</div>
-</div>
-<hr>
-</section>
-<section id="exports-reproducibility" class="level2">
-<h2 class="anchored" data-anchor-id="exports-reproducibility">Exports &amp; Reproducibility</h2>
-<ul>
-<li>CSVs: <code>outputs/step1_missingness_by_variable.csv</code>, <code>outputs/step2_*</code>, <code>outputs/step4_difference_series_robust.csv</code>, <code>outputs/step5_*</code>, <code>outputs/step6b_rank_correlations_by_city.csv</code>, <code>outputs/indicator_dictionary.csv</code><br>
-</li>
-<li>Figures: <code>figures/step*.png</code></li>
-</ul>
-<p><strong>Session info:</strong></p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>R version 4.5.1 (2025-06-13 ucrt)
-Platform: x86_64-w64-mingw32/x64
-Running under: Windows 11 x64 (build 26100)
-
-Matrix products: default
-  LAPACK version 3.12.1
-
-locale:
-[1] LC_COLLATE=English_United Kingdom.utf8 
-[2] LC_CTYPE=English_United Kingdom.utf8   
-[3] LC_MONETARY=English_United Kingdom.utf8
-[4] LC_NUMERIC=C                           
-[5] LC_TIME=English_United Kingdom.utf8    
-
-time zone: Europe/London
-tzcode source: internal
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-other attached packages:
-[1] jsonlite_2.0.0 ggplot2_3.5.2  tidyr_1.3.1    dplyr_1.1.4    readr_2.1.5   
-
-loaded via a namespace (and not attached):
- [1] Matrix_1.7-3       bit_4.6.0          gtable_0.3.6       compiler_4.5.1    
- [5] crayon_1.5.3       tidyselect_1.2.1   parallel_4.5.1     splines_4.5.1     
- [9] textshaping_1.0.1  systemfonts_1.2.3  scales_1.4.0       yaml_2.3.10       
-[13] fastmap_1.2.0      lattice_0.22-7     R6_2.6.1           labeling_0.4.3    
-[17] generics_0.1.4     knitr_1.50         htmlwidgets_1.6.4  tibble_3.3.0      
-[21] pillar_1.11.0      RColorBrewer_1.1-3 tzdb_0.5.0         rlang_1.1.6       
-[25] utf8_1.2.6         xfun_0.52          bit64_4.6.0-1      cli_3.6.5         
-[29] mgcv_1.9-3         withr_3.0.2        magrittr_2.0.3     digest_0.6.37     
-[33] grid_4.5.1         vroom_1.6.5        rstudioapi_0.17.1  hms_1.1.3         
-[37] nlme_3.1-168       lifecycle_1.0.4    vctrs_0.6.5        evaluate_1.0.4    
-[41] glue_1.8.0         farver_2.1.2       ragg_1.4.0         rmarkdown_2.29    
-[45] purrr_1.1.0        tools_4.5.1        pkgconfig_2.0.3    htmltools_0.5.8.1 </code></pre>
-</div>
-</div>
+<section id="dictionary-metadata" class="level2">
+<h2 class="anchored" data-anchor-id="dictionary-metadata">Dictionary &amp; Metadata</h2>
 </section>
 
 </main>

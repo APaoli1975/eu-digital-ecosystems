@@ -1,5 +1,6 @@
+
 ---
-title: "Quantitative Analysis — Tallinn vs Barcelona (Parametrised, Robust & Transparent)"
+title: "Quantitative Analysis — Multi-City (Parametrised, Robust & Transparent)"
 format:
   html:
     theme: cosmo
@@ -18,33 +19,28 @@ params:
   year_max: 2024
   min_completeness: 0.70
   min_years_per_city: 5
+  cities_include: !expr NULL
+  base_city: !expr NULL
 ---
 
 ## 0) Setup & Data Load
 
 ```{r}
-library(readr)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(jsonlite)
-
+library(readr); library(dplyr); library(tidyr); library(ggplot2); library(jsonlite); library(stringr)
 theme_set(theme_minimal())
 
-# Folders
 dir.create("outputs", showWarnings = FALSE)
 dir.create("figures", showWarnings = FALSE)
 
-# Parameters
-year_min <- params$year_min
-year_max <- params$year_max
-min_comp <- params$min_completeness
+year_min  <- params$year_min
+year_max  <- params$year_max
+min_comp  <- params$min_completeness
 min_years <- params$min_years_per_city
-
+cities_sel <- params$cities_include
+base_city  <- params$base_city
 pct <- function(x) paste0(round(100 * x), "%")
 
-# Data
-fp <- "data_clean/analysis_ready_tallinn_barcelona.csv"
+fp <- "data_clean/analysis_ready_4cities.csv"
 if (!file.exists(fp)) {
   cat("❌ File not found:", fp, "\n",
       "→ Run pipeline first:\n",
@@ -53,24 +49,23 @@ if (!file.exists(fp)) {
       "   source('scripts/03_build_indicators.R')\n")
   knitr::knit_exit()
 }
-dat <- read_csv(fp, show_col_types = FALSE)
+dat0 <- read_csv(fp, show_col_types = FALSE)
 
-cities     <- paste(sort(unique(dat$city)), collapse = ", ")
-nice_years <- paste(range(dat$year, na.rm = TRUE), collapse = "–")
+all_cities <- sort(unique(dat0$city))
+if (is.null(cities_sel)) cities_sel <- all_cities
+dat0 <- dat0 %>% filter(city %in% cities_sel)
+
+dat0 <- dat0 %>% mutate(year = suppressWarnings(as.integer(year)))
+
+cities     <- paste(sort(unique(dat0$city)), collapse = ", ")
+nice_years <- paste(range(dat0$year, na.rm = TRUE), collapse = "–")
 ```
-
-**Data loaded.** Cities: `r cities`. Full-span years: `r nice_years`.  
-**Analysis window:** `r year_min`–`r year_max`.  
-**Robustness rules:** ≥ `r pct(min_comp)` completeness **and** ≥ `r min_years` non-missing years **in each city**.
-
----
 
 ## 1) Sanity & Completeness Checks
 
-**Purpose.** Establish coverage before comparison to avoid biased inference.
-
 ```{r}
-# Variable-level missingness (share of NA across whole file)
+dat <- dat0
+
 miss_var <- dat %>%
   summarise(across(everything(), ~ mean(is.na(.)) * 100)) %>%
   pivot_longer(everything(), names_to = "variable", values_to = "pct_missing") %>%
@@ -86,13 +81,7 @@ print(p_miss)
 ggsave("figures/step1_missingness_by_variable.png", p_miss, width = 9, height = 7, dpi = 300)
 ```
 
-*Narrative.* Figure 1 shows relatively better coverage for innovation outputs and thinner coverage for some SME-finance proxies. We prioritise well-covered indicators for cross-city comparisons and treat sparse finance indicators descriptively.
-
----
-
-## 2) Robust Indicator Set (Window + Thresholds)
-
-**Rule.** An indicator is **robust** if, within `r year_min`–`r year_max`, **each city** has completeness ≥ `r pct(min_comp)` **and** ≥ `r min_years` non-missing years.
+## 2) Robust Indicator Set
 
 ```{r}
 win <- dat %>% filter(year >= year_min, year <= year_max)
@@ -109,16 +98,18 @@ comp <- win %>%
 eligibility <- comp %>%
   group_by(indicator) %>%
   summarise(
-    min_comp_both  = min(completeness, na.rm = TRUE),
-    min_years_both = min(years_non_na, na.rm = TRUE),
+    min_comp_all  = suppressWarnings(min(completeness, na.rm = TRUE)),
+    min_years_all = suppressWarnings(min(years_non_na, na.rm = TRUE)),
+    n_cities_seen = n_distinct(city),
     .groups = "drop"
   ) %>%
-  mutate(included = is.finite(min_comp_both) & min_comp_both >= min_comp &
-                     is.finite(min_years_both) & min_years_both >= min_years)
+  mutate(included = is.finite(min_comp_all) & is.finite(min_years_all) &
+                   n_cities_seen == length(cities_sel) &
+                   min_comp_all >= min_comp & min_years_all >= min_years)
 
 robust_inds <- eligibility %>%
   filter(included) %>%
-  arrange(desc(min_comp_both), desc(min_years_both)) %>%
+  arrange(desc(min_comp_all), desc(min_years_all)) %>%
   pull(indicator)
 
 win_robust <- win %>% filter(indicator %in% robust_inds)
@@ -128,15 +119,7 @@ write_csv(eligibility, "outputs/step2_eligibility_completeness_minyears.csv")
 write_csv(win_robust,  "outputs/step2_panel_window_robust.csv")
 ```
 
-**Robust indicators (count):** `r length(robust_inds)`  
-**Preview:**  
-```{r}
-if (length(robust_inds)) tibble::tibble(indicator = robust_inds) else cat("None — consider adjusting parameters.")
-```
-
----
-
-## 2b) Coverage Map (Indicator × Year, by City — Discreet)
+## 2b) Coverage Map
 
 ```{r}
 year_grid <- tibble(year = seq.int(year_min, year_max, 1))
@@ -150,34 +133,31 @@ cov_long <- expand.grid(
   left_join(win %>% select(city, year, indicator, value), by = c("city","year","indicator")) %>%
   mutate(has_value = !is.na(value))
 
-# Focus on robust and "near-robust" (>=40%) to keep figure readable
 near_robust <- comp %>%
   group_by(indicator) %>%
-  summarise(min_comp_both = min(completeness, na.rm = TRUE), .groups = "drop") %>%
-  filter(min_comp_both >= 0.40) %>% pull(indicator)
+  summarise(min_comp_all = suppressWarnings(min(completeness, na.rm = TRUE)), .groups = "drop") %>%
+  filter(is.finite(min_comp_all) & min_comp_all >= 0.40) %>%
+  pull(indicator)
 
 p_cov <- cov_long %>%
   filter(indicator %in% union(robust_inds, near_robust)) %>%
   mutate(indicator = factor(indicator, levels = sort(unique(indicator)))) %>%
   ggplot(aes(x = year, y = indicator, fill = has_value)) +
   geom_tile(color = "white", linewidth = 0.2) +
-  facet_wrap(~ city, ncol = 1, scales = "free_y") +
+  facet_wrap(~ city, ncol = max(1, ceiling(length(cities_sel)/2)), scales = "free_y") +
   scale_fill_manual(values = c(`TRUE` = "#B0B7BF", `FALSE` = "#ECEFF1"),
                     labels = c(`FALSE` = "NA", `TRUE` = "Data")) +
-  labs(title = "Figure 2. Coverage by indicator × year (discreet)",
-       subtitle = paste0("Window ", year_min, "–", year_max, " — darker = data present"),
+  labs(title = "Figure 2. Coverage by indicator × year (windowed)",
+       subtitle = paste0("Window ", year_min, "–", year_max),
        x = NULL, y = NULL, fill = NULL,
        caption = "Source: Author’s processing of Eurostat & OECD extracts.")
 print(p_cov)
-ggsave("figures/step2b_coverage_map.png", p_cov, width = 9, height = 6.5, dpi = 300)
+ggsave("figures/step2b_coverage_map.png", p_cov, width = 11, height = 6.5, dpi = 300)
 ```
 
----
-
-## 3) Descriptive Exploration (Time Series)
+## 3) Descriptive Exploration
 
 ```{r}
-# Count obs to adapt geoms
 obs_counts <- win_robust %>%
   group_by(indicator, city) %>%
   summarise(n_years = n_distinct(year[!is.na(value)]), .groups = "drop")
@@ -190,64 +170,64 @@ p_ts <- ggplot(plot_dat, aes(x = year, y = value, color = city, group = city)) +
   geom_line(data = subset(plot_dat, n_years >= 2), linewidth = 0.9) +
   geom_point(size = 1.6) +
   facet_wrap(~ indicator, scales = "free_y") +
-  labs(
-    title = "Figure 3. Time series by indicator (robust set)",
-    subtitle = paste0("Rules: completeness ≥ ", pct(min_comp),
-                      " and ≥ ", min_years, " years per city"),
-    x = NULL, y = NULL, color = "City",
-    caption = "Source: Eurostat high-tech indicators; OECD (FUA Economy & SME Finance); author’s processing."
-  )
+  labs(title = "Figure 3. Time series by indicator (robust set)",
+       x = NULL, y = NULL, color = "City")
 print(p_ts)
-ggsave("figures/step3_trends_robust.png", p_ts, width = 10, height = 6, dpi = 300)
+ggsave("figures/step3_trends_robust.png", p_ts, width = 11, height = 6.5, dpi = 300)
 ```
 
-*Narrative.* Figure 3 suggests a pattern of Barcelona’s earlier strength with evidence of Tallinn’s catch-up on several innovation indicators.
-
----
-
-## 4) Cross-City Comparison (Levels & Differences)
+## 4) Cross-City Differences
 
 ```{r}
-# Difference series (Barcelona − Tallinn)
-diff_dat <- win_robust %>%
+wide_vals <- win_robust %>%
   select(city, year, indicator, value) %>%
-  pivot_wider(names_from = city, values_from = value) %>%
-  mutate(diff_BCN_minus_TLN = Barcelona - Tallinn) %>%
-  group_by(indicator) %>%
-  mutate(n_years = n_distinct(year[!is.na(diff_BCN_minus_TLN)])) %>%
-  ungroup()
+  pivot_wider(names_from = city, values_from = value)
 
-p_diff <- ggplot(diff_dat, aes(x = year, y = diff_BCN_minus_TLN)) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_line(data = subset(diff_dat, n_years >= 2), linewidth = 1, color = "grey30") +
-  geom_point(size = 1.6, color = "grey30") +
-  facet_wrap(~ indicator, scales = "free_y") +
-  labs(
-    title = "Figure 4. Difference over time (Barcelona − Tallinn)",
-    subtitle = "Positive values denote Barcelona > Tallinn",
-    x = NULL, y = "Difference (BCN − TLN)",
-    caption = "Source: Eurostat & OECD; author’s processing."
-  )
-print(p_diff)
-ggsave("figures/step4_difference_BCN_minus_TLN.png", p_diff, width = 10, height = 6, dpi = 300)
+make_diff_long <- function(W, base_city = NULL){
+  cn <- setdiff(names(W), c("year","indicator"))
+  if (length(cn) < 2) return(NULL)
+  if (!is.null(base_city) && base_city %in% cn) {
+    others <- setdiff(cn, base_city)
+    out <- lapply(others, function(o){
+      tmp <- W %>% transmute(indicator, year, city_pair = paste(o, "−", base_city),
+                             diff = .data[[o]] - .data[[base_city]])
+      tmp
+    })
+    bind_rows(out)
+  } else {
+    cmb <- utils::combn(cn, 2)
+    out <- lapply(seq_len(ncol(cmb)), function(i){
+      a <- cmb[1,i]; b <- cmb[2,i]
+      tmp <- W %>% transmute(indicator, year, city_pair = paste(a, "−", b),
+                             diff = .data[[a]] - .data[[b]])
+      tmp
+    })
+    bind_rows(out)
+  }
+}
 
-write_csv(diff_dat, "outputs/step4_difference_series_robust.csv")
+diff_long <- make_diff_long(wide_vals, base_city = base_city)
+
+if (!is.null(diff_long) && nrow(diff_long) > 0) {
+  p_diff <- ggplot(diff_long, aes(x = year, y = diff)) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_line(linewidth = 0.9, color = "grey30") +
+    geom_point(size = 1.4, color = "grey20") +
+    facet_grid(city_pair ~ indicator, scales = "free_y") +
+    labs(title = "Figure 4. Differences over time", x = NULL, y = "Difference")
+  print(p_diff)
+  ggsave("figures/step4_differences.png", p_diff, width = 12, height = 7, dpi = 300)
+}
 ```
 
-*Narrative.* In several indicators the gap narrows toward the end of the window, consistent with a convergence/catch-up dynamic.
-
----
-
-## 5) Normalisation for Comparability (Index = 100 at Base Year)
-
-**Purpose.** Compare relative growth paths independent of scale. We index each indicator by city to **100 at its first non-missing year** within the window.
+## 5) Indexed Paths
 
 ```{r}
 index_dat <- win_robust %>%
   arrange(indicator, city, year) %>%
   group_by(indicator, city) %>%
   mutate(
-    base = first(na.omit(value)),
+    base = dplyr::first(na.omit(value)),
     idx  = ifelse(!is.na(base) & base != 0, value / base * 100, NA_real_)
   ) %>%
   ungroup()
@@ -256,25 +236,17 @@ p_idx <- ggplot(index_dat, aes(x = year, y = idx, color = city, group = city)) +
   geom_line(linewidth = 1) +
   geom_point(size = 1.4) +
   facet_wrap(~ indicator, scales = "free_y") +
-  labs(
-    title = "Figure 5. Indexed paths (base = 100 at first available year, per city)",
-    x = NULL, y = "Index (base=100)", color = "City",
-    caption = "Source: Eurostat & OECD; author’s processing."
-  )
+  labs(title = "Figure 5. Indexed paths", x = NULL, y = "Index (base=100)", color = "City")
 print(p_idx)
-ggsave("figures/step5_indexed_paths.png", p_idx, width = 10, height = 6, dpi = 300)
+ggsave("figures/step5_indexed_paths.png", p_idx, width = 11, height = 6.5, dpi = 300)
 ```
 
-*Narrative.* Figure 5 reveals relative momentum: Tallinn often shows steeper indexed growth, while Barcelona exhibits steadier, less volatile paths.
-
----
-
-## 6) Association Diagnostics (Adaptive & Informative)
+## 6) Correlation Diagnostics
 
 ```{r}
 min_overlap <- 5
+robust_k <- dplyr::n_distinct(win_robust$indicator)
 
-# Helper to compute correlation matrix with a minimum overlap guard
 safe_cor <- function(W, min_overlap = 5) {
   C <- suppressWarnings(cor(W, use = "pairwise.complete.obs"))
   if (!is.matrix(C)) return(C)
@@ -286,215 +258,51 @@ safe_cor <- function(W, min_overlap = 5) {
   C
 }
 
-robust_k <- dplyr::n_distinct(win_robust$indicator)
-
 if (robust_k >= 3) {
-  # Heatmaps + pairwise scatter grid (for richer indicator sets)
   wide_city <- win_robust %>%
     select(city, year, indicator, value) %>%
     pivot_wider(names_from = indicator, values_from = value)
 
-  corr_df <- function(df, which_city){
-    W <- df %>% filter(city == which_city) %>% select(-city, -year)
-    if (ncol(W) < 2) return(NULL)
-    M <- safe_cor(W, min_overlap = 5)
-    if (is.null(M)) return(NULL)
-    as.data.frame(M) %>%
+  for (cc in sort(unique(wide_city$city))) {
+    W <- wide_city %>% filter(city == cc) %>% select(-city, -year)
+    if (ncol(W) < 2) next
+    M <- safe_cor(W, min_overlap)
+    if (is.null(M)) next
+    dfc <- as.data.frame(M) %>%
       tibble::rownames_to_column("row_ind") %>%
       pivot_longer(-row_ind, names_to = "col_ind", values_to = "corr")
+
+    p_corr <- ggplot(dfc, aes(col_ind, row_ind, fill = corr)) +
+      geom_tile(color = "white", linewidth = 0.2) +
+      scale_fill_gradient2(limits = c(-1,1)) +
+      labs(title = paste0("Figure 6. Correlation heatmap — ", cc),
+           x = NULL, y = NULL, fill = "r") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    print(p_corr)
+    ggsave(paste0("figures/step6_corr_heatmap_", str_to_lower(cc), ".png"),
+           p_corr, width = 7, height = 6, dpi = 300)
   }
-
-  corr_BCN <- corr_df(wide_city, "Barcelona")
-  corr_TLN <- corr_df(wide_city, "Tallinn")
-
-  plot_corr <- function(df, title_txt){
-    if (is.null(df)) {
-      ggplot() + labs(title = paste(title_txt, "— insufficient overlap"))
-    } else {
-      ggplot(df, aes(col_ind, row_ind, fill = corr)) +
-        geom_tile(color = "white", linewidth = 0.2) +
-        scale_fill_gradient2(limits = c(-1,1)) +
-        labs(title = title_txt, x = NULL, y = NULL, fill = "r") +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    }
-  }
-
-  p_corr_bcn <- plot_corr(corr_BCN, "Figure 6a. Correlation heatmap — Barcelona")
-  p_corr_tln <- plot_corr(corr_TLN, "Figure 6b. Correlation heatmap — Tallinn")
-  print(p_corr_bcn); ggsave("figures/step6a_corr_heatmap_barcelona.png", p_corr_bcn, width = 7, height = 6, dpi = 300)
-  print(p_corr_tln); ggsave("figures/step6b_corr_heatmap_tallinn.png",  p_corr_tln, width = 7, height = 6, dpi = 300)
-
-  # Pairwise scatter with linear fits (≥5 overlapping years)
-  make_pairs_long <- function(data_long, city_name, min_overlap = 5){
-    W <- data_long %>%
-      filter(city == city_name) %>%
-      select(year, indicator, value) %>%
-      pivot_wider(names_from = indicator, values_from = value)
-
-    inds <- setdiff(names(W), "year")
-    if (length(inds) < 2) return(NULL)
-
-    cmb <- utils::combn(inds, 2)
-    out <- vector("list", ncol(cmb)); keep <- logical(ncol(cmb))
-
-    for (i in seq_len(ncol(cmb))) {
-      a <- cmb[1, i]; b <- cmb[2, i]
-      tmp <- W %>%
-        select(year, !!a, !!b) %>%
-        rename(x = !!a, y = !!b) %>%
-        filter(!is.na(x) & !is.na(y))
-      if (nrow(tmp) >= min_overlap) {
-        tmp$pair <- paste(a, "vs", b); tmp$city <- city_name
-        out[[i]] <- tmp; keep[i] <- TRUE
-      } else keep[i] <- FALSE
-    }
-    out <- out[keep]; if (length(out) == 0) return(NULL)
-    bind_rows(out)
-  }
-
-  pairs_all <- bind_rows(
-    make_pairs_long(win_robust, "Barcelona", 5),
-    make_pairs_long(win_robust, "Tallinn",   5)
-  )
-
-  if (!is.null(pairs_all) && nrow(pairs_all) > 0) {
-    p_pairs <- ggplot(pairs_all, aes(x = x, y = y)) +
-      geom_point(alpha = 0.75, size = 1.8) +
-      geom_smooth(method = "lm", se = FALSE, linewidth = 0.8) +
-      facet_grid(city ~ pair, scales = "free") +
-      labs(title = "Figure 6c. Pairwise scatter with linear fits (≥5 overlapping years)",
-           x = NULL, y = NULL)
-    print(p_pairs)
-    ggsave("figures/step6c_pairwise_scatter.png", p_pairs, width = 12, height = 6.5, dpi = 300)
-  }
-
-} else {
-  # Exactly 2 robust indicators: more informative diagnostics
-  inds <- sort(unique(win_robust$indicator))
-
-  # Standardised co-movement (z-scores), per city
-  std <- win_robust %>%
-    filter(indicator %in% inds) %>%
-    group_by(indicator, city) %>%
-    mutate(z = (value - mean(value, na.rm = TRUE)) / sd(value, na.rm = TRUE)) %>%
-    ungroup()
-
-  p_ts2 <- ggplot(std, aes(x = year, y = z, color = indicator)) +
-    geom_line(linewidth = 1) +
-    facet_wrap(~ city, ncol = 1) +
-    labs(title = "Figure 6a. Standardised co-movement (z-scores)",
-         x = NULL, y = "z-score", color = "Indicator",
-         caption = "Source: Author’s calculations.")
-  print(p_ts2)
-  ggsave("figures/step6a_std_timeseries.png", p_ts2, width = 9, height = 6, dpi = 300)
-
-  # Scatter with linear fits + correlation stats by city
-  wide2 <- win_robust %>%
-    select(city, year, indicator, value) %>%
-    pivot_wider(names_from = indicator, values_from = value)
-
-  ind_x <- inds[1]; ind_y <- inds[2]
-  sc_long <- wide2 %>%
-    select(city, year, !!ind_x, !!ind_y) %>%
-    rename(x = !!ind_x, y = !!ind_y) %>%
-    filter(!is.na(x) & !is.na(y))
-
-  stats <- sc_long %>%
-    group_by(city) %>%
-    summarise(
-      n = n(),
-      pearson = suppressWarnings(cor(x, y, use = "complete.obs", method = "pearson")),
-      spearman = suppressWarnings(cor(x, y, use = "complete.obs", method = "spearman")),
-      kendall  = suppressWarnings(cor(x, y, use = "complete.obs", method = "kendall")),
-      .groups = "drop"
-    )
-  write_csv(stats, "outputs/step6b_rank_correlations_by_city.csv")
-
-  p_sc <- ggplot(sc_long, aes(x = x, y = y)) +
-    geom_point(alpha = 0.8) +
-    geom_smooth(method = "lm", se = FALSE, linewidth = 0.9) +
-    facet_wrap(~ city, nrow = 1, scales = "free") +
-    labs(title = paste0("Figure 6b. ", ind_y, " vs ", ind_x, " — by city"),
-         x = ind_x, y = ind_y,
-         caption = "Note: lines show OLS fits; numbers saved in outputs/step6b_rank_correlations_by_city.csv.")
-  print(p_sc)
-  ggsave("figures/step6b_scatter_by_city.png", p_sc, width = 10, height = 4.5, dpi = 300)
-
-  # Rolling correlation (time-varying association)
-  roll_k <- 5
-  wide2_ordered <- wide2 %>% arrange(city, year)
-  roll_cor <- function(df, k) {
-    out <- vector("numeric", nrow(df))
-    for (i in seq_len(nrow(df))) {
-      lo <- max(1, i - k + 1); hi <- i
-      sub <- df[lo:hi, c(ind_x, ind_y)]
-      sub <- sub[complete.cases(sub), ]
-      out[i] <- if (nrow(sub) >= 3) suppressWarnings(cor(sub[[1]], sub[[2]])) else NA_real_
-    }
-    out
-  }
-  rc <- wide2_ordered %>%
-    group_by(city) %>%
-    mutate(r_roll = roll_cor(cur_data(), roll_k)) %>%
-    ungroup()
-
-  p_roll <- ggplot(rc, aes(year, r_roll, color = city, group = city)) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_line(size = 1) +
-    labs(title = paste0("Figure 6c. Rolling correlation (", roll_k, "-year window)"),
-         x = NULL, y = "rolling r",
-         caption = "Note: pairwise complete observations in moving window.")
-  print(p_roll)
-  ggsave("figures/step6c_rolling_correlation.png", p_roll, width = 9, height = 4.8, dpi = 300)
 }
 ```
 
-*Narrative.* With only two robust indicators, heatmaps are uninformative; the adaptive diagnostics substitute standardised co-movement, scatter with linear fits, and rolling correlation to reveal direction, strength, and stability of association. For 3+ indicators, we retain heatmaps and add a pairwise scatter grid.
-
----
-
-## 7) Quantitative Synthesis (Short Narrative)
-
-*Taken together, Figures 3–6 suggest the following.*  
-(1) Indicators meeting robustness criteria provide a clean basis for comparison; sparse SME-finance proxies remain descriptive.  
-(2) Barcelona’s earlier advantage is visible in levels, while Tallinn displays steeper **indexed growth** (Figure 5) and higher **episodic momentum** in some periods.  
-(3) Cross-city differences (Figure 4) tend to narrow toward the end of the window on several indicators, consistent with **catch-up**.  
-(4) Association diagnostics (Section 6) show synchronisation in standardised movements and positive city-wise slopes, with time-varying correlation indicating phases of stronger coupling likely coincident with policy cycles; these will be triangulated against policy timelines in the qualitative chapter.
-
----
-
-## Indicator Dictionary (Auto-generated)
+## Dictionary & Metadata
 
 ```{r}
-dict <- dat |>
-  distinct(indicator) |>
-  arrange(indicator) |>
-  mutate(source_hint = ifelse(grepl("^HighTech|^HighGrowth", indicator), "Eurostat (innovation/high-tech)", "OECD (FUA/SME finance)"))
+dict <- dat %>%
+  distinct(indicator) %>%
+  arrange(indicator) %>%
+  mutate(source_hint = ifelse(grepl("^HighTech|^HighGrowth|^GERD|^SBS", indicator),
+                              "Eurostat", "OECD"))
 write_csv(dict, "outputs/indicator_dictionary.csv")
-dict
-```
 
----
-
-## Exports & Reproducibility
-
-- CSVs: `outputs/step1_missingness_by_variable.csv`, `outputs/step2_*`, `outputs/step4_difference_series_robust.csv`, `outputs/step5_*`, `outputs/step6b_rank_correlations_by_city.csv`, `outputs/indicator_dictionary.csv`  
-- Figures: `figures/step*.png`
-
-```{r}
 meta <- list(
   timestamp = as.character(Sys.time()),
-  params    = list(year_min = year_min, year_max = year_max,
-                   min_completeness = min_comp, min_years_per_city = min_years),
-  cities    = sort(unique(dat$city)),
-  indicators_all    = sort(unique(dat$indicator)),
-  indicators_robust = sort(unique(win_robust$indicator))
+  params    = list(
+    year_min = year_min, year_max = year_max,
+    min_completeness = min_comp, min_years_per_city = min_years,
+    cities_selected = cities_sel, base_city = base_city
+  )
 )
 write_json(meta, "outputs/run_metadata.json", auto_unbox = TRUE, pretty = TRUE)
-```
-
-**Session info:**
-```{r}
-sessionInfo()
 ```
 
