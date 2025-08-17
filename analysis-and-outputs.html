@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Andrea Paoli">
 
-<title>Analysis &amp; Outputs — Tallinn/Barcelona</title>
+<title>Quantitative Analysis — Tallinn vs Barcelona (Parametrised, Robust &amp; Transparent)</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,41 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -69,7 +33,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="analysis-and-outputs_files/libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="analysis-and-outputs_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="analysis-and-outputs_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="analysis-and-outputs_files/libs/bootstrap/bootstrap-bb462d781dde1847d9e3ccf7736099dd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="analysis-and-outputs_files/libs/bootstrap/bootstrap-813c323200a87c37e262811031999de4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -81,33 +45,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
-  <ul>
-  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup"><span class="header-section-number">1</span> 1. Setup</a></li>
-  <li><a href="#data-ingestion" id="toc-data-ingestion" class="nav-link" data-scroll-target="#data-ingestion"><span class="header-section-number">2</span> 2. Data Ingestion</a>
   <ul class="collapse">
-  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto"><span class="header-section-number">2.1</span> Quarto</a></li>
-  <li><a href="#running-code" id="toc-running-code" class="nav-link" data-scroll-target="#running-code"><span class="header-section-number">2.2</span> Running Code</a></li>
-  </ul></li>
+  <li><a href="#setup-data-load" id="toc-setup-data-load" class="nav-link active" data-scroll-target="#setup-data-load">0) Setup &amp; Data Load</a></li>
+  <li><a href="#sanity-completeness-checks" id="toc-sanity-completeness-checks" class="nav-link" data-scroll-target="#sanity-completeness-checks">1) Sanity &amp; Completeness Checks</a></li>
+  <li><a href="#robust-indicator-set-window-thresholds" id="toc-robust-indicator-set-window-thresholds" class="nav-link" data-scroll-target="#robust-indicator-set-window-thresholds">2) Robust Indicator Set (Window + Thresholds)</a></li>
+  <li><a href="#b-coverage-map-indicator-year-by-city-discreet" id="toc-b-coverage-map-indicator-year-by-city-discreet" class="nav-link" data-scroll-target="#b-coverage-map-indicator-year-by-city-discreet">2b) Coverage Map (Indicator × Year, by City — Discreet)</a></li>
+  <li><a href="#descriptive-exploration-time-series" id="toc-descriptive-exploration-time-series" class="nav-link" data-scroll-target="#descriptive-exploration-time-series">3) Descriptive Exploration (Time Series)</a></li>
+  <li><a href="#cross-city-comparison-levels-differences" id="toc-cross-city-comparison-levels-differences" class="nav-link" data-scroll-target="#cross-city-comparison-levels-differences">4) Cross-City Comparison (Levels &amp; Differences)</a></li>
+  <li><a href="#normalisation-for-comparability-index-100-at-base-year" id="toc-normalisation-for-comparability-index-100-at-base-year" class="nav-link" data-scroll-target="#normalisation-for-comparability-index-100-at-base-year">5) Normalisation for Comparability (Index = 100 at Base Year)</a></li>
+  <li><a href="#association-diagnostics-adaptive-informative" id="toc-association-diagnostics-adaptive-informative" class="nav-link" data-scroll-target="#association-diagnostics-adaptive-informative">6) Association Diagnostics (Adaptive &amp; Informative)</a></li>
+  <li><a href="#quantitative-synthesis-short-narrative" id="toc-quantitative-synthesis-short-narrative" class="nav-link" data-scroll-target="#quantitative-synthesis-short-narrative">7) Quantitative Synthesis (Short Narrative)</a></li>
+  <li><a href="#indicator-dictionary-auto-generated" id="toc-indicator-dictionary-auto-generated" class="nav-link" data-scroll-target="#indicator-dictionary-auto-generated">Indicator Dictionary (Auto-generated)</a></li>
+  <li><a href="#exports-reproducibility" id="toc-exports-reproducibility" class="nav-link" data-scroll-target="#exports-reproducibility">Exports &amp; Reproducibility</a></li>
   </ul>
-</nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="analysis-and-outputs.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Analysis &amp; Outputs — Tallinn/Barcelona</h1>
+<h1 class="title">Quantitative Analysis — Tallinn vs Barcelona (Parametrised, Robust &amp; Transparent)</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Andrea Paoli </p>
-          </div>
-  </div>
     
   
     
@@ -118,558 +81,199 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="setup" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> 1. Setup</h1>
-<p>This notebook generates <strong>reusable figures and tables</strong> for insertion into the Word thesis.<br>
-Outputs are saved to <code>figures/</code> and <code>outputs/</code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pkgs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"tidyverse"</span>,<span class="st">"janitor"</span>,<span class="st">"broom"</span>,<span class="st">"modelsummary"</span>,<span class="st">"gt"</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"readr"</span>,<span class="st">"readxl"</span>,<span class="st">"openxlsx"</span>,<span class="st">"jsonlite"</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"sf"</span>,<span class="st">"tmap"</span>,<span class="st">"rmapshaper"</span>,<span class="st">"eurostat"</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"plotly"</span>,<span class="st">"DT"</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>missing <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(pkgs, <span class="fu">rownames</span>(<span class="fu">installed.packages</span>()))</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">length</span>(missing)) {</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">"Missing packages: "</span>, <span class="fu">paste</span>(missing, <span class="at">collapse =</span> <span class="st">", "</span>),</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>       <span class="st">"</span><span class="sc">\n</span><span class="st">Install them in the R Console with install.packages(...) and re-render."</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">lapply</span>(pkgs, library, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the subfolders for the project</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>subfolders <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"data_raw"</span>, <span class="st">"data_clean"</span>, <span class="st">"figures"</span>, <span class="st">"outputs"</span>, <span class="st">"scripts"</span>, <span class="st">"docs"</span>)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create them if missing</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (folder <span class="cf">in</span> subfolders) {</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(folder)) <span class="fu">dir.create</span>(folder)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<section id="setup-data-load" class="level2">
+<h2 class="anchored" data-anchor-id="setup-data-load">0) Setup &amp; Data Load</h2>
+<p><strong>Data loaded.</strong> Cities: Barcelona, Tallinn. Full-span years: 1982–2024.<br>
+<strong>Analysis window:</strong> 2010–2024.<br>
+<strong>Robustness rules:</strong> ≥ 70% completeness <strong>and</strong> ≥ 5 non-missing years <strong>in each city</strong>.</p>
+<hr>
 </section>
-<section id="data-ingestion" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> 2. Data Ingestion</h1>
+<section id="sanity-completeness-checks" class="level2">
+<h2 class="anchored" data-anchor-id="sanity-completeness-checks">1) Sanity &amp; Completeness Checks</h2>
+<p><strong>Purpose.</strong> Establish coverage before comparison to avoid biased inference.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> mtcars <span class="sc">|&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">|&gt;</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">model =</span> <span class="fu">rownames</span>(mtcars))</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">write_csv</span>(data, <span class="st">"outputs/example_data.csv"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(mtcars, <span class="fu">aes</span>(wt, mpg)) <span class="sc">+</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Weight"</span>, <span class="at">y =</span> <span class="st">"Miles per Gallon"</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"figures/example_scatter.png"</span>, <span class="at">plot =</span> p, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="dv">4</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>summary_tbl <span class="ot">&lt;-</span> mtcars <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean_mpg =</span> <span class="fu">mean</span>(mpg), <span class="at">mean_hp =</span> <span class="fu">mean</span>(hp), <span class="at">n =</span> dplyr<span class="sc">::</span><span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">|&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="at">title =</span> <span class="fu">md</span>(<span class="st">"**Descriptive Summary**"</span>))</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">write_csv</span>(mtcars, <span class="st">"outputs/example_table_data.csv"</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>summary_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><em>Narrative.</em> Figure 1 shows relatively better coverage for innovation outputs and thinner coverage for some SME-finance proxies. We prioritise well-covered indicators for cross-city comparisons and treat sparse finance indicators descriptively.</p>
+<hr>
+</section>
+<section id="robust-indicator-set-window-thresholds" class="level2">
+<h2 class="anchored" data-anchor-id="robust-indicator-set-window-thresholds">2) Robust Indicator Set (Window + Thresholds)</h2>
+<p><strong>Rule.</strong> An indicator is <strong>robust</strong> if, within 2010–2024, <strong>each city</strong> has completeness ≥ 70% <strong>and</strong> ≥ 5 non-missing years.</p>
+<p><strong>Robust indicators (count):</strong> 2<br>
+<strong>Preview:</strong></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 1
+  indicator                   
+  &lt;chr&gt;                       
+1 VentureCapital_pct_GDP      
+2 HighGrowth_enterprises_share</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="b-coverage-map-indicator-year-by-city-discreet" class="level2">
+<h2 class="anchored" data-anchor-id="b-coverage-map-indicator-year-by-city-discreet">2b) Coverage Map (Indicator × Year, by City — Discreet)</h2>
+<div class="cell">
 <div class="cell-output-display">
-<div id="sfarkzqdfo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#sfarkzqdfo table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#sfarkzqdfo thead, #sfarkzqdfo tbody, #sfarkzqdfo tfoot, #sfarkzqdfo tr, #sfarkzqdfo td, #sfarkzqdfo th {
-  border-style: none;
-}
-
-#sfarkzqdfo p {
-  margin: 0;
-  padding: 0;
-}
-
-#sfarkzqdfo .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#sfarkzqdfo .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#sfarkzqdfo .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#sfarkzqdfo .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#sfarkzqdfo .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#sfarkzqdfo .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#sfarkzqdfo .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#sfarkzqdfo .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#sfarkzqdfo .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#sfarkzqdfo .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#sfarkzqdfo .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#sfarkzqdfo .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#sfarkzqdfo .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#sfarkzqdfo .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#sfarkzqdfo .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#sfarkzqdfo .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#sfarkzqdfo .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#sfarkzqdfo .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#sfarkzqdfo .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#sfarkzqdfo .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#sfarkzqdfo .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#sfarkzqdfo .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#sfarkzqdfo .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#sfarkzqdfo .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#sfarkzqdfo .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#sfarkzqdfo .gt_left {
-  text-align: left;
-}
-
-#sfarkzqdfo .gt_center {
-  text-align: center;
-}
-
-#sfarkzqdfo .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#sfarkzqdfo .gt_font_normal {
-  font-weight: normal;
-}
-
-#sfarkzqdfo .gt_font_bold {
-  font-weight: bold;
-}
-
-#sfarkzqdfo .gt_font_italic {
-  font-style: italic;
-}
-
-#sfarkzqdfo .gt_super {
-  font-size: 65%;
-}
-
-#sfarkzqdfo .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#sfarkzqdfo .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#sfarkzqdfo .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#sfarkzqdfo .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#sfarkzqdfo .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#sfarkzqdfo .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#sfarkzqdfo .gt_indent_5 {
-  text-indent: 25px;
-}
-
-#sfarkzqdfo .katex-display {
-  display: inline-flex !important;
-  margin-bottom: 0.75em !important;
-}
-
-#sfarkzqdfo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
-  height: 0px !important;
-}
-</style>
-
-<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-<thead>
-<tr class="gt_heading header">
-<th colspan="3" class="gt_heading gt_title gt_font_normal gt_bottom_border"><strong>Descriptive Summary</strong></th>
-</tr>
-<tr class="gt_col_headings even">
-<th id="mean_mpg" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">mean_mpg</th>
-<th id="mean_hp" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">mean_hp</th>
-<th id="n" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">n</th>
-</tr>
-</thead>
-<tbody class="gt_table_body">
-<tr class="odd">
-<td class="gt_row gt_right" headers="mean_mpg">20.09062</td>
-<td class="gt_row gt_right" headers="mean_hp">146.6875</td>
-<td class="gt_row gt_right" headers="n">32</td>
-</tr>
-</tbody>
-</table>
-
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
 </div>
 <hr>
-<section id="quarto" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="quarto"><span class="header-section-number">2.1</span> Quarto</h2>
-<p>Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <a href="https://quarto.org" class="uri">https://quarto.org</a>.</p>
 </section>
-<section id="running-code" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="running-code"><span class="header-section-number">2.2</span> Running Code</h2>
-<p>When you click the <strong>Render</strong> button a document will be generated that includes both content and the output of embedded code. You can embed code like this:</p>
+<section id="descriptive-exploration-time-series" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-exploration-time-series">3) Descriptive Exploration (Time Series)</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
-<p>You can add options to executable code like this</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 4</code></pre>
 </div>
-</div>
-<p>The <code>echo: false</code> option disables the printing of code (only output is displayed).</p>
+<p><em>Narrative.</em> Figure 3 suggests a pattern of Barcelona’s earlier strength with evidence of Tallinn’s catch-up on several innovation indicators.</p>
+<hr>
 </section>
+<section id="cross-city-comparison-levels-differences" class="level2">
+<h2 class="anchored" data-anchor-id="cross-city-comparison-levels-differences">4) Cross-City Comparison (Levels &amp; Differences)</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Narrative.</em> In several indicators the gap narrows toward the end of the window, consistent with a convergence/catch-up dynamic.</p>
+<hr>
+</section>
+<section id="normalisation-for-comparability-index-100-at-base-year" class="level2">
+<h2 class="anchored" data-anchor-id="normalisation-for-comparability-index-100-at-base-year">5) Normalisation for Comparability (Index = 100 at Base Year)</h2>
+<p><strong>Purpose.</strong> Compare relative growth paths independent of scale. We index each indicator by city to <strong>100 at its first non-missing year</strong> within the window.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Narrative.</em> Figure 5 reveals relative momentum: Tallinn often shows steeper indexed growth, while Barcelona exhibits steadier, less volatile paths.</p>
+<hr>
+</section>
+<section id="association-diagnostics-adaptive-informative" class="level2">
+<h2 class="anchored" data-anchor-id="association-diagnostics-adaptive-informative">6) Association Diagnostics (Adaptive &amp; Informative)</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Narrative.</em> With only two robust indicators, heatmaps are uninformative; the adaptive diagnostics substitute standardised co-movement, scatter with linear fits, and rolling correlation to reveal direction, strength, and stability of association. For 3+ indicators, we retain heatmaps and add a pairwise scatter grid.</p>
+<hr>
+</section>
+<section id="quantitative-synthesis-short-narrative" class="level2">
+<h2 class="anchored" data-anchor-id="quantitative-synthesis-short-narrative">7) Quantitative Synthesis (Short Narrative)</h2>
+<p><em>Taken together, Figures 3–6 suggest the following.</em><br>
+(1) Indicators meeting robustness criteria provide a clean basis for comparison; sparse SME-finance proxies remain descriptive.<br>
+(2) Barcelona’s earlier advantage is visible in levels, while Tallinn displays steeper <strong>indexed growth</strong> (Figure 5) and higher <strong>episodic momentum</strong> in some periods.<br>
+(3) Cross-city differences (Figure 4) tend to narrow toward the end of the window on several indicators, consistent with <strong>catch-up</strong>.<br>
+(4) Association diagnostics (Section 6) show synchronisation in standardised movements and positive city-wise slopes, with time-varying correlation indicating phases of stronger coupling likely coincident with policy cycles; these will be triangulated against policy timelines in the qualitative chapter.</p>
+<hr>
+</section>
+<section id="indicator-dictionary-auto-generated" class="level2">
+<h2 class="anchored" data-anchor-id="indicator-dictionary-auto-generated">Indicator Dictionary (Auto-generated)</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  indicator                    source_hint                    
+  &lt;chr&gt;                        &lt;chr&gt;                          
+1 HighGrowth_enterprises_share Eurostat (innovation/high-tech)
+2 HighTech_patents             Eurostat (innovation/high-tech)
+3 VentureCapital_pct_GDP       OECD (FUA/SME finance)         </code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="exports-reproducibility" class="level2">
+<h2 class="anchored" data-anchor-id="exports-reproducibility">Exports &amp; Reproducibility</h2>
+<ul>
+<li>CSVs: <code>outputs/step1_missingness_by_variable.csv</code>, <code>outputs/step2_*</code>, <code>outputs/step4_difference_series_robust.csv</code>, <code>outputs/step5_*</code>, <code>outputs/step6b_rank_correlations_by_city.csv</code>, <code>outputs/indicator_dictionary.csv</code><br>
+</li>
+<li>Figures: <code>figures/step*.png</code></li>
+</ul>
+<p><strong>Session info:</strong></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>R version 4.5.1 (2025-06-13 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 26100)
+
+Matrix products: default
+  LAPACK version 3.12.1
+
+locale:
+[1] LC_COLLATE=English_United Kingdom.utf8 
+[2] LC_CTYPE=English_United Kingdom.utf8   
+[3] LC_MONETARY=English_United Kingdom.utf8
+[4] LC_NUMERIC=C                           
+[5] LC_TIME=English_United Kingdom.utf8    
+
+time zone: Europe/London
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] jsonlite_2.0.0 ggplot2_3.5.2  tidyr_1.3.1    dplyr_1.1.4    readr_2.1.5   
+
+loaded via a namespace (and not attached):
+ [1] Matrix_1.7-3       bit_4.6.0          gtable_0.3.6       compiler_4.5.1    
+ [5] crayon_1.5.3       tidyselect_1.2.1   parallel_4.5.1     splines_4.5.1     
+ [9] textshaping_1.0.1  systemfonts_1.2.3  scales_1.4.0       yaml_2.3.10       
+[13] fastmap_1.2.0      lattice_0.22-7     R6_2.6.1           labeling_0.4.3    
+[17] generics_0.1.4     knitr_1.50         htmlwidgets_1.6.4  tibble_3.3.0      
+[21] pillar_1.11.0      RColorBrewer_1.1-3 tzdb_0.5.0         rlang_1.1.6       
+[25] utf8_1.2.6         xfun_0.52          bit64_4.6.0-1      cli_3.6.5         
+[29] mgcv_1.9-3         withr_3.0.2        magrittr_2.0.3     digest_0.6.37     
+[33] grid_4.5.1         vroom_1.6.5        rstudioapi_0.17.1  hms_1.1.3         
+[37] nlme_3.1-168       lifecycle_1.0.4    vctrs_0.6.5        evaluate_1.0.4    
+[41] glue_1.8.0         farver_2.1.2       ragg_1.4.0         rmarkdown_2.29    
+[45] purrr_1.1.0        tools_4.5.1        pkgconfig_2.0.3    htmltools_0.5.8.1 </code></pre>
+</div>
+</div>
 </section>
 
 </main>
