@@ -48,12 +48,12 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#setup-data-load" id="toc-setup-data-load" class="nav-link active" data-scroll-target="#setup-data-load">0) Setup &amp; Data Load</a></li>
   <li><a href="#sanity-completeness-checks" id="toc-sanity-completeness-checks" class="nav-link" data-scroll-target="#sanity-completeness-checks">1) Sanity &amp; Completeness Checks</a></li>
-  <li><a href="#robust-indicator-set" id="toc-robust-indicator-set" class="nav-link" data-scroll-target="#robust-indicator-set">2) Robust Indicator Set</a></li>
-  <li><a href="#b-coverage-map" id="toc-b-coverage-map" class="nav-link" data-scroll-target="#b-coverage-map">2b) Coverage Map</a></li>
-  <li><a href="#descriptive-exploration" id="toc-descriptive-exploration" class="nav-link" data-scroll-target="#descriptive-exploration">3) Descriptive Exploration</a></li>
+  <li><a href="#robust-indicator-set-window-thresholds-across-all-selected-cities" id="toc-robust-indicator-set-window-thresholds-across-all-selected-cities" class="nav-link" data-scroll-target="#robust-indicator-set-window-thresholds-across-all-selected-cities">2) Robust Indicator Set (window + thresholds across <strong>all</strong> selected cities)</a></li>
+  <li><a href="#b-coverage-map-indicator-year-by-city" id="toc-b-coverage-map-indicator-year-by-city" class="nav-link" data-scroll-target="#b-coverage-map-indicator-year-by-city">2b) Coverage Map (Indicator × Year, by City)</a></li>
+  <li><a href="#descriptive-exploration-time-series" id="toc-descriptive-exploration-time-series" class="nav-link" data-scroll-target="#descriptive-exploration-time-series">3) Descriptive Exploration (Time Series)</a></li>
   <li><a href="#cross-city-differences" id="toc-cross-city-differences" class="nav-link" data-scroll-target="#cross-city-differences">4) Cross-City Differences</a></li>
-  <li><a href="#indexed-paths" id="toc-indexed-paths" class="nav-link" data-scroll-target="#indexed-paths">5) Indexed Paths</a></li>
-  <li><a href="#correlation-diagnostics" id="toc-correlation-diagnostics" class="nav-link" data-scroll-target="#correlation-diagnostics">6) Correlation Diagnostics</a></li>
+  <li><a href="#normalisation-for-comparability-index-100-at-first-available-year-per-city" id="toc-normalisation-for-comparability-index-100-at-first-available-year-per-city" class="nav-link" data-scroll-target="#normalisation-for-comparability-index-100-at-first-available-year-per-city">5) Normalisation for Comparability (Index = 100 at first available year per city)</a></li>
+  <li><a href="#association-diagnostics-by-city-if-3-indicators" id="toc-association-diagnostics-by-city-if-3-indicators" class="nav-link" data-scroll-target="#association-diagnostics-by-city-if-3-indicators">6) Association Diagnostics (by city, if ≥3 indicators)</a></li>
   <li><a href="#dictionary-metadata" id="toc-dictionary-metadata" class="nav-link" data-scroll-target="#dictionary-metadata">Dictionary &amp; Metadata</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="analysis-and-outputs.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
@@ -81,6 +81,12 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="setup-data-load" class="level2">
 <h2 class="anchored" data-anchor-id="setup-data-load">0) Setup &amp; Data Load</h2>
+<p><strong>Data loaded.</strong> Cities: Athens, Barcelona, Lisbon, Tallinn. Years available: 1978–2024.<br>
+Observations: 435 | Variables: 25.<br>
+<strong>Analysis window:</strong> 2010–2024.<br>
+<strong>Robustness rule:</strong> for each selected city → completeness ≥ 70% &amp; years ≥ 5.<br>
+<strong>Base city (differences):</strong> Athens.</p>
+<hr>
 </section>
 <section id="sanity-completeness-checks" class="level2">
 <h2 class="anchored" data-anchor-id="sanity-completeness-checks">1) Sanity &amp; Completeness Checks</h2>
@@ -93,24 +99,26 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
+<hr>
 </section>
-<section id="robust-indicator-set" class="level2">
-<h2 class="anchored" data-anchor-id="robust-indicator-set">2) Robust Indicator Set</h2>
-</section>
-<section id="b-coverage-map" class="level2">
-<h2 class="anchored" data-anchor-id="b-coverage-map">2b) Coverage Map</h2>
+<section id="robust-indicator-set-window-thresholds-across-all-selected-cities" class="level2">
+<h2 class="anchored" data-anchor-id="robust-indicator-set-window-thresholds-across-all-selected-cities">2) Robust Indicator Set (window + thresholds across <strong>all</strong> selected cities)</h2>
+<p><strong>Robust indicator count:</strong> 4</p>
 <div class="cell">
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 1
+  indicator                            
+  &lt;chr&gt;                                
+1 HighTech_Employment_regional         
+2 GERD_regional                        
+3 SBS_hightech_regional                
+4 HighGrowth_enterprises_share_regional</code></pre>
 </div>
 </div>
-</div>
+<hr>
 </section>
-<section id="descriptive-exploration" class="level2">
-<h2 class="anchored" data-anchor-id="descriptive-exploration">3) Descriptive Exploration</h2>
+<section id="b-coverage-map-indicator-year-by-city" class="level2">
+<h2 class="anchored" data-anchor-id="b-coverage-map-indicator-year-by-city">2b) Coverage Map (Indicator × Year, by City)</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -120,9 +128,10 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
+<hr>
 </section>
-<section id="cross-city-differences" class="level2">
-<h2 class="anchored" data-anchor-id="cross-city-differences">4) Cross-City Differences</h2>
+<section id="descriptive-exploration-time-series" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-exploration-time-series">3) Descriptive Exploration (Time Series)</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -132,9 +141,10 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
+<hr>
 </section>
-<section id="indexed-paths" class="level2">
-<h2 class="anchored" data-anchor-id="indexed-paths">5) Indexed Paths</h2>
+<section id="cross-city-differences" class="level2">
+<h2 class="anchored" data-anchor-id="cross-city-differences">4) Cross-City Differences</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -144,9 +154,10 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
+<hr>
 </section>
-<section id="correlation-diagnostics" class="level2">
-<h2 class="anchored" data-anchor-id="correlation-diagnostics">6) Correlation Diagnostics</h2>
+<section id="normalisation-for-comparability-index-100-at-first-available-year-per-city" class="level2">
+<h2 class="anchored" data-anchor-id="normalisation-for-comparability-index-100-at-first-available-year-per-city">5) Normalisation for Comparability (Index = 100 at first available year per city)</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -155,31 +166,57 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 </div>
+</div>
+<hr>
+</section>
+<section id="association-diagnostics-by-city-if-3-indicators" class="level2">
+<h2 class="anchored" data-anchor-id="association-diagnostics-by-city-if-3-indicators">6) Association Diagnostics (by city, if ≥3 indicators)</h2>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-8-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-8-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-8-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis-and-outputs_files/figure-html/unnamed-chunk-9-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+<hr>
 </section>
 <section id="dictionary-metadata" class="level2">
 <h2 class="anchored" data-anchor-id="dictionary-metadata">Dictionary &amp; Metadata</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 2
+  indicator                             source_hint                             
+  &lt;chr&gt;                                 &lt;chr&gt;                                   
+1 GERD_regional                         Eurostat (innovation/high-tech / SBS / …
+2 HighGrowth_enterprises_share_regional Eurostat (innovation/high-tech / SBS / …
+3 HighTech_Employment_regional          Eurostat (innovation/high-tech / SBS / …
+4 HighTech_patents_regional             Eurostat (innovation/high-tech / SBS / …
+5 SBS_hightech_regional                 Eurostat (innovation/high-tech / SBS / …</code></pre>
+</div>
+</div>
 </section>
 
 </main>
