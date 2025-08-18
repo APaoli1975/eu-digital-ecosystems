@@ -1,248 +1,228 @@
 # scripts/03_build_indicators.R
+# Purpose: Build harmonised KPIs for Tallinn, Barcelona, Athens, Lisbon
+# Inputs:  data_clean/analysis_ready_4cities.csv  (from scripts 01 + 02)
+# Outputs:
+#   data_clean/kpis_all_long.csv
+#   data_clean/kpis_robust_long.csv
+#   data_clean/kpis_robust_wide_cityyear.csv
+#   data_clean/kpis_scoreboard.csv
+#   outputs/kpi_completeness_by_city.csv
+#   outputs/kpi_eligibility.csv
+#
+# KPIs (ratio-based to reduce unit issues):
+#   1) KPI_RnD_Intensity           = GERD_regional / GDP
+#   2) KPI_HT_Employment_Share     = HighTech_Employment_regional / EMPW
+#   3) KPI_HT_Patents_per_100kEmp  = (HighTech_patents_regional / EMPW) * 100,000
+#   4) KPI_SBS_per_Emp             = SBS_hightech_regional / EMPW
+#   5) KPI_HighGrowth_Share        = HighGrowth_enterprises_share_regional  (as-is)
+
 suppressPackageStartupMessages({
-  library(readr); library(dplyr); library(stringr); library(tidyr); library(janitor)
+  library(readr); library(dplyr); library(tidyr); library(stringr)
+  library(janitor); library(scales)
 })
 
-# ---------- helpers ----------
-msg <- function(...) cat("[03] ", sprintf(...), "\n")
-rd  <- function(p) readr::read_csv(p, show_col_types = FALSE) |> janitor::clean_names()
+# ---------------- parameters (edit if needed) ----------------
+year_min         <- 2010
+year_max         <- 2024
+min_completeness <- 0.70   # share of non-missing years within window, per city
+min_years        <- 6      # minimum non-missing years per city within window
+cities_expected  <- c("Tallinn","Barcelona","Athens","Lisbon")
+# -------------------------------------------------------------
 
-robust_year <- function(x){
-  if (inherits(x, "Date"))    return(as.integer(format(x, "%Y")))
-  if (inherits(x, "yearmon")) return(as.integer(floor(as.numeric(x))))
-  if (is.numeric(x))          return(as.integer(x))
-  if (is.character(x)) {
-    # try "YYYY" anywhere in the string
-    y <- suppressWarnings(as.integer(stringr::str_extract(x, "(?<!\\d)\\d{4}(?!\\d)")))
-    return(y)
-  }
-  suppressWarnings(as.integer(x))
+msg <- function(...) cat("[03-KPI] ", sprintf(...), "\n")
+pct <- function(x) paste0(round(100 * x), "%")
+
+# Ensure folders
+dir.create("data_clean", showWarnings = FALSE)
+dir.create("outputs",    showWarnings = FALSE)
+
+# 0) Load master panel ---------------------------------------------------------
+in_path <- "data_clean/analysis_ready_4cities.csv"
+if (!file.exists(in_path)) stop("Missing file: ", in_path, call. = FALSE)
+
+dat0 <- readr::read_csv(in_path, show_col_types = FALSE) %>%
+  janitor::clean_names() %>%
+  mutate(year = suppressWarnings(as.integer(year)))
+
+req_cols <- c("city","indicator","year","value")
+if (!all(req_cols %in% names(dat0))) {
+  stop("Input is missing required columns: ", paste(setdiff(req_cols, names(dat0)), collapse=", "))
 }
 
-# Return first matching column (case-insensitive, regex allowed); else NULL
-pick_any_col <- function(df, patterns){
-  nms <- names(df)
-  low <- tolower(nms)
-  for (p in patterns) {
-    hit <- which(str_detect(low, regex(p, ignore_case = TRUE)))
-    if (length(hit)) return(nms[hit[1]])
-  }
-  NULL
+# Keep only the 4 case cities (safe if more are present)
+dat0 <- dat0 %>% filter(city %in% cities_expected)
+
+# 1) Pivot to wide so indicators become columns -------------------------------
+ind_wide <- dat0 %>%
+  select(city, year, indicator, value) %>%
+  tidyr::pivot_wider(names_from = indicator, values_from = value)
+
+msg("Indicators available after widening (first 20): %s",
+    paste(head(names(ind_wide), 20), collapse=", "))
+
+# ----- Safe column extractors (avoid referencing non-existent cols) ----------
+get_col <- function(df, nm, default = NA_real_) {
+  if (nm %in% names(df)) df[[nm]] else rep(default, nrow(df))
 }
 
-# ---------- inputs ----------
-eu_raw_dir <- "data_raw"
-tbl_gerd      <- "rd_e_gerdreg"
-tbl_htec_emp  <- "htec_emp_reg2"
-tbl_patents   <- "pat_ep_rtec"
-tbl_sbs       <- "sbs_na_ind_r2"
-tbl_highgrow  <- "bd_9pm_r2"
+# Pull needed source series (as vectors, so mutate won't touch unknown columns)
+GERD  <- get_col(ind_wide, "GERD_regional")
+HTEMP <- get_col(ind_wide, "HighTech_Employment_regional")
+HTPAT <- get_col(ind_wide, "HighTech_patents_regional")
+SBS   <- get_col(ind_wide, "SBS_hightech_regional")
+HGROW <- get_col(ind_wide, "HighGrowth_enterprises_share_regional")
+GDP   <- get_col(ind_wide, "GDP")
+EMPW  <- get_col(ind_wide, "EMPW")
+LABP  <- get_col(ind_wide, "LAB_PROD")
 
-fp_oecdF <- "data_clean/oecd_region_econom_barcelona_tallinn_athens_lisbon.csv"
-fp_oecdS <- "data_clean/oecd_sme_fin_ee_es_el_pt.csv"
-if (!file.exists(fp_oecdF)) stop("Missing file: ", fp_oecdF, call. = FALSE)
-if (!file.exists(fp_oecdS)) stop("Missing file: ", fp_oecdS, call. = FALSE)
-
-# ---------- REBUILD Eurostat from raw ----------
-rfp <- function(code){
-  csv <- file.path(eu_raw_dir, paste0("eurostat_", code, ".csv"))
-  rds <- file.path(eu_raw_dir, paste0("eurostat_", code, ".rds"))
-  if (file.exists(csv)) return(csv)
-  if (file.exists(rds)) return(rds)
-  NA_character_
+# Fallback: if GDP missing but LAB_PROD and EMPW exist, compute GDP ≈ LAB_PROD * EMPW
+if (all(is.na(GDP)) && (!all(is.na(LABP)) && !all(is.na(EMPW)))) {
+  GDP <- ifelse(!is.na(LABP) & !is.na(EMPW), LABP * EMPW, NA_real_)
+  msg("ℹ GDP approximated as LAB_PROD × EMPW (fallback).")
 }
 
-read_eu_raw <- function(code){
-  path <- rfp(code)
-  if (is.na(path)) { msg("⚠ Missing raw for %s", code); return(NULL) }
-  out <- if (endsWith(path, ".csv")) rd(path) else readr::read_rds(path)
-  janitor::clean_names(out)
+# Log availability
+missing_cols <- c()
+if (all(is.na(GDP)))  missing_cols <- c(missing_cols, "GDP")
+if (all(is.na(EMPW))) missing_cols <- c(missing_cols, "EMPW")
+if (length(missing_cols)) {
+  msg("⚠ Source columns entirely missing (all NA): %s — KPIs depending on them will be NA.",
+      paste(missing_cols, collapse=", "))
 }
 
-norm_eu <- function(df, label){
-  if (is.null(df)) return(NULL)
-  # try many variants used by SDMX/Eurostat dumps
-  geo_col  <- pick_any_col(df, c("^geo$", "^geo_code$", "^ref.?_?area$", "^region$", "^nuts"))
-  time_col <- pick_any_col(df, c("^year$", "^time$", "^time_?period$", "^obs_?time$", "^obstime$", "^timeperiod$"))
-  val_col  <- pick_any_col(df, c("^values?$", "^obs_?value$", "^obsvalue$", "^value$"))
-  
-  if (is.null(geo_col))  stop("Eurostat: cannot find GEO column in: ", paste(names(df), collapse=", "))
-  if (is.null(time_col)) msg("ℹ Eurostat: no explicit time column; will try to derive year from other cols.")
-  if (is.null(val_col))  stop("Eurostat: cannot find VALUE column in: ", paste(names(df), collapse=", "))
-  
-  geo <- df[[geo_col]]
-  tim <- if (!is.null(time_col)) df[[time_col]] else NA
-  val <- df[[val_col]]
-  
-  yr  <- robust_year(tim)
-  
-  tibble::tibble(
-    indicator = label,
-    geo       = as.character(geo),
-    year      = yr,
-    value     = suppressWarnings(as.numeric(val))
-  ) |> filter(!is.na(geo))
-}
+# 2) Build KPIs (guard denominators) ------------------------------------------
+# Compute KPI vectors safely using the extracted vectors
+KPI_RnD_Intensity <- ifelse(!is.na(GERD) & !is.na(GDP) & GDP != 0, GERD / GDP, NA_real_)
+KPI_HT_Employment_Share <- ifelse(!is.na(HTEMP) & !is.na(EMPW) & EMPW != 0, HTEMP / EMPW, NA_real_)
+KPI_HT_Patents_per_100kEmp <- ifelse(!is.na(HTPAT) & !is.na(EMPW) & EMPW > 0, (HTPAT / EMPW) * 1e5, NA_real_)
+KPI_SBS_per_Emp <- ifelse(!is.na(SBS) & !is.na(EMPW) & EMPW > 0, SBS / EMPW, NA_real_)
+KPI_HighGrowth_Share <- ifelse(!is.na(HGROW), HGROW, NA_real_)
 
-eu_all <- dplyr::bind_rows(
-  norm_eu(read_eu_raw(tbl_gerd),     "GERD_regional"),
-  norm_eu(read_eu_raw(tbl_htec_emp), "HighTech_Employment_regional"),
-  norm_eu(read_eu_raw(tbl_patents),  "HighTech_patents_regional"),
-  norm_eu(read_eu_raw(tbl_sbs),      "SBS_hightech_regional"),
-  norm_eu(read_eu_raw(tbl_highgrow), "HighGrowth_enterprises_share_regional")
+kpi_df <- tibble::tibble(
+  city = ind_wide$city,
+  year = ind_wide$year,
+  KPI_RnD_Intensity = KPI_RnD_Intensity,
+  KPI_HT_Employment_Share = KPI_HT_Employment_Share,
+  KPI_HT_Patents_per_100kEmp = KPI_HT_Patents_per_100kEmp,
+  KPI_SBS_per_Emp = KPI_SBS_per_Emp,
+  KPI_HighGrowth_Share = KPI_HighGrowth_Share
 )
 
-if (is.null(eu_all) || nrow(eu_all) == 0) {
-  stop("Eurostat raw tables not found / empty in data_raw/. Run scripts/01_pull_eurostat.R first.")
+kpi_long <- kpi_df %>%
+  tidyr::pivot_longer(-c(city, year), names_to = "KPI", values_to = "value") %>%
+  arrange(KPI, city, year)
+
+out_all_long <- "data_clean/kpis_all_long.csv"
+readr::write_csv(kpi_long, out_all_long)
+msg("Wrote %s (%s rows).", out_all_long, format(nrow(kpi_long), big.mark=","))
+
+# 3) Apply robustness within window across ALL four cities --------------------
+kpi_win <- kpi_long %>% filter(year >= year_min, year <= year_max)
+
+comp <- kpi_win %>%
+  group_by(KPI, city) %>%
+  summarise(
+    years_total  = n_distinct(year),
+    years_non_na = n_distinct(year[!is.na(value)]),
+    completeness = ifelse(years_total == 0, NA_real_, years_non_na / years_total),
+    .groups = "drop"
+  )
+
+elig <- comp %>%
+  group_by(KPI) %>%
+  summarise(
+    min_comp_all  = suppressWarnings(min(completeness, na.rm = TRUE)),
+    min_years_all = suppressWarnings(min(years_non_na, na.rm = TRUE)),
+    n_cities_seen = n_distinct(city),
+    .groups = "drop"
+  ) %>%
+  mutate(included = is.finite(min_comp_all) & is.finite(min_years_all) &
+           n_cities_seen == length(cities_expected) &
+           min_comp_all >= min_completeness &
+           min_years_all >= min_years)
+
+robust_kpis <- elig %>% filter(included) %>% pull(KPI)
+
+# If none pass, relax to 80% thresholds (explicit)
+relaxed <- FALSE
+if (!length(robust_kpis)) {
+  relaxed <- TRUE
+  elig <- elig %>%
+    mutate(included_relax = is.finite(min_comp_all) & is.finite(min_years_all) &
+             n_cities_seen == length(cities_expected) &
+             min_comp_all >= (min_completeness * 0.8) &
+             min_years_all >= max(3, floor(min_years * 0.8)))
+  robust_kpis <- elig %>% filter(included_relax) %>% pull(KPI)
 }
 
-# Flexible NUTS matching (NUTS3 or NUTS2 parent)
-targets <- tibble::tibble(
-  city         = c("Tallinn","Barcelona","Athens","Lisbon"),
-  nuts3_exact  = c("EE001","ES511","EL305|EL30","PT170|PT17"),
-  nuts2_parent = c("EE00","ES51","EL30","PT17")
-) |>
-  mutate(nuts_pattern = paste0("^(", nuts3_exact, ")$|^(", nuts2_parent, ")"))
+kpi_robust <- kpi_win %>% filter(KPI %in% robust_kpis)
 
-pat_for <- function(cty) targets$nuts_pattern[targets$city == cty]
+# Save diagnostics
+diag_comp <- "outputs/kpi_completeness_by_city.csv"
+diag_elig <- "outputs/kpi_eligibility.csv"
+readr::write_csv(comp, diag_comp)
+readr::write_csv(elig, diag_elig)
+msg("Wrote %s and %s.", diag_comp, diag_elig)
 
-eu_city <- eu_all |>
-  mutate(city = dplyr::case_when(
-    str_detect(geo, pat_for("Tallinn"))   ~ "Tallinn",
-    str_detect(geo, pat_for("Barcelona")) ~ "Barcelona",
-    str_detect(geo, pat_for("Athens"))    ~ "Athens",
-    str_detect(geo, pat_for("Lisbon"))    ~ "Lisbon",
-    TRUE ~ NA_character_
-  )) |>
-  filter(!is.na(city))
+# Save robust panels (long + wide)
+out_rob_long <- "data_clean/kpis_robust_long.csv"
+readr::write_csv(kpi_robust, out_rob_long)
+msg("Wrote %s (%s rows).", out_rob_long, format(nrow(kpi_robust), big.mark=","))
 
-# Some tables come as national (2-letter geo) — map to cities so they still appear
-eu_nat <- eu_all |>
-  filter(geo %in% c("EE","ES","EL","PT")) |>
-  mutate(city = case_when(
-    geo == "EE" ~ "Tallinn",
-    geo == "ES" ~ "Barcelona",
-    geo == "EL" ~ "Athens",
-    geo == "PT" ~ "Lisbon",
-    TRUE ~ NA_character_
-  )) |>
-  filter(!is.na(city))
+kpi_wide <- kpi_robust %>%
+  tidyr::pivot_wider(names_from = KPI, values_from = value) %>%
+  arrange(city, year)
 
-eu_ind <- bind_rows(eu_city, eu_nat) |>
-  group_by(city, indicator, year) |>
-  summarise(value = sum(value, na.rm = TRUE), .groups = "drop")
+out_rob_wide <- "data_clean/kpis_robust_wide_cityyear.csv"
+readr::write_csv(kpi_wide, out_rob_wide)
+msg("Wrote %s (%s rows, %s cols).", out_rob_wide, format(nrow(kpi_wide), big.mark=","), ncol(kpi_wide))
 
-msg("Eurostat rebuild → %s rows | years [%s…%s]",
-    format(nrow(eu_ind), big.mark=","), suppressWarnings(min(eu_ind$year, na.rm=TRUE)),
-    suppressWarnings(max(eu_ind$year, na.rm=TRUE)))
-
-# ---------- OECD FUA (keep ALL measures; safe names) ----------
-fua <- rd(fp_oecdF)
-msg("FUA cols: %s", paste(names(fua), collapse = ", "))
-
-pick_col <- function(df, pats, label){
-  nm <- names(df)
-  for (p in pats) {
-    hit <- nm[str_detect(nm, regex(p, ignore_case = TRUE))]
-    if (length(hit)) return(hit[1])
-  }
-  stop("Cannot find ", label, " in: ", paste(nm, collapse=", "))
+# 4) Scoreboard — last level & CAGR -------------------------------------------
+calc_cagr <- function(y, v) {
+  ok <- !is.na(v)
+  if (sum(ok) < 2) return(NA_real_)
+  years <- y[ok]; vals <- v[ok]
+  t0 <- min(years); t1 <- max(years)
+  v0 <- vals[which.min(years)]; v1 <- vals[which.max(years)]
+  if (is.na(v0) || is.na(v1) || v0 <= 0 || t1 <= t0) return(NA_real_)
+  (v1 / v0)^(1/(t1 - t0)) - 1
 }
 
-pat_year  <- c("^year$", "time", "time_period", "obstime", "obs_time")
-pat_meas  <- c("^measure$", "indicator", "item", "variable")
-pat_value <- c("^value$", "obs_value", "val", "amount", "^obsval(ue)?$")
-
-fua_year <- pick_col(fua, pat_year,  "FUA YEAR")
-fua_meas <- pick_col(fua, pat_meas,  "FUA MEASURE")
-fua_val  <- pick_col(fua, pat_value, "FUA VALUE")
-
-lab <- tolower(if ("region_label" %in% names(fua)) fua$region_label else "")
-if ("region_label" %in% names(fua) && requireNamespace("stringi", quietly = TRUE))
-  lab <- stringi::stri_trans_general(lab, "Latin-ASCII")
-
-fua <- fua |>
-  mutate(city = dplyr::case_when(
-    str_detect(lab, "barcel")                                      ~ "Barcelona",
-    str_detect(lab, "tallinn")                                     ~ "Tallinn",
-    str_detect(lab, "athens|attica|attiki|athin")                  ~ "Athens",
-    str_detect(lab, "lisbon|lisboa")                               ~ "Lisbon",
-    str_detect(region_code, regex("^ES", ignore_case = TRUE))      ~ "Barcelona",
-    str_detect(region_code, regex("^EE", ignore_case = TRUE))      ~ "Tallinn",
-    str_detect(region_code, regex("^EL|^GR", ignore_case = TRUE))  ~ "Athens",
-    str_detect(region_code, regex("^PT", ignore_case = TRUE))      ~ "Lisbon",
-    TRUE ~ NA_character_
-  )) |>
-  filter(!is.na(city))
-
-msg("FUA measures (first 20): %s", paste(head(sort(unique(fua[[fua_meas]])), 20), collapse = ", "))
-
-fua_wide <- fua |>
-  rename(year_raw = all_of(fua_year),
-         measure   = all_of(fua_meas),
-         value_raw = all_of(fua_val)) |>
-  mutate(year  = robust_year(year_raw),
-         value = suppressWarnings(as.numeric(value_raw))) |>
-  group_by(city, year, measure) |>
-  summarise(value = mean(value, na.rm = TRUE), .groups = "drop") |>
-  mutate(measure_clean = make.names(toupper(trimws(measure)))) |>
-  select(city, year, measure_clean, value) |>
-  distinct() |>
-  pivot_wider(names_from = measure_clean, values_from = value)
-
-msg("FUA wide: %s rows | cols: %s", nrow(fua_wide), paste(names(fua_wide), collapse=", "))
-
-# ---------- OECD SME (country → city; keep ALL measures) ----------
-sme <- rd(fp_oecdS)
-msg("SME cols: %s", paste(names(sme), collapse = ", "))
-
-sme_year <- pick_col(sme, pat_year,  "SME YEAR")
-sme_meas <- pick_col(sme, pat_meas,  "SME MEASURE")
-sme_val  <- pick_col(sme, pat_value, "SME VALUE")
-sme_ctry <- pick_col(sme, c("^country$","country_name","ref_area","geo","nation","country_iso2","country_iso3"), "SME COUNTRY")
-
-sme_wide <- sme |>
-  rename(year_raw = all_of(sme_year),
-         country_raw = all_of(sme_ctry),
-         indicator    = all_of(sme_meas),
-         value_raw    = all_of(sme_val)) |>
+scoreboard <- kpi_robust %>%
+  group_by(KPI, city) %>%
+  summarise(
+    first_year = suppressWarnings(min(year[!is.na(value)])),
+    last_year  = suppressWarnings(max(year[!is.na(value)])),
+    last_value = value[which.max(year * (!is.na(value)))],
+    CAGR       = calc_cagr(year, value),
+    obs_years  = n_distinct(year[!is.na(value)]),
+    .groups = "drop"
+  ) %>%
+  arrange(KPI, desc(last_value)) %>%
   mutate(
-    year  = robust_year(year_raw),
-    value = suppressWarnings(as.numeric(value_raw)),
-    country_up = toupper(as.character(country_raw)),
-    country = case_when(
-      country_up %in% c("EE","EST","ESTONIA")     ~ "Estonia",
-      country_up %in% c("ES","ESP","SPAIN")       ~ "Spain",
-      country_up %in% c("EL","GR","GRC","GREECE") ~ "Greece",
-      country_up %in% c("PT","PRT","PORTUGAL")    ~ "Portugal",
-      TRUE ~ as.character(country_raw)
-    )
-  ) |>
-  group_by(country, year, indicator) |>
-  summarise(value = mean(value, na.rm = TRUE), .groups = "drop") |>
-  mutate(indicator_clean = make.names(toupper(trimws(indicator)))) |>
-  select(country, year, indicator_clean, value) |>
-  pivot_wider(names_from = indicator_clean, values_from = value)
+    last_value_fmt = dplyr::case_when(
+      grepl("Intensity|Share", KPI) ~ scales::percent(last_value, accuracy = 0.1),
+      grepl("per_100kEmp", KPI)     ~ scales::comma(last_value, accuracy = 0.1),
+      TRUE                          ~ scales::comma(last_value, accuracy = 1)
+    ),
+    CAGR_fmt = scales::percent(CAGR, accuracy = 0.1)
+  )
 
-msg("SME wide: %s rows | countries: %s",
-    nrow(sme_wide), paste(sort(unique(sme_wide$country)), collapse=", "))
+out_score <- "data_clean/kpis_scoreboard.csv"
+readr::write_csv(scoreboard, out_score)
+msg("Wrote %s (%s rows).", out_score, format(nrow(scoreboard), big.mark=","))
 
-# ---------- Final join ----------
-city_country <- tibble::tibble(
-  city    = c("Tallinn","Barcelona","Athens","Lisbon"),
-  country = c("Estonia","Spain","Greece","Portugal")
-)
+# 5) Final console summary -----------------------------------------------------
+msg("Window: %d–%d | Robustness: completeness ≥ %s & years ≥ %d (per city).",
+    year_min, year_max, pct(min_completeness), min_years)
+msg("Cities (expected): %s", paste(cities_expected, collapse=", "))
+if (length(robust_kpis)) {
+  msg("Robust KPIs: %s", paste(robust_kpis, collapse=", "))
+} else {
+  msg("No strict-robust KPIs; relaxed (80%%) applied → %s",
+      ifelse(length(robust_kpis), paste(robust_kpis, collapse=", "), "still none"))
+}
+msg("🏁 KPI build complete.")
 
-analytical <- eu_ind |>
-  left_join(fua_wide,     by = c("city","year")) |>
-  left_join(city_country, by = "city") |>
-  left_join(sme_wide,     by = c("country","year")) |>
-  arrange(city, indicator, year)
 
-out_path <- "data_clean/analysis_ready_4cities.csv"
-readr::write_csv(analytical, out_path)
-msg("Wrote %s (%d rows, %d cols) — years [%s…%s]",
-    out_path, nrow(analytical), ncol(analytical),
-    suppressWarnings(min(analytical$year, na.rm = TRUE)),
-    suppressWarnings(max(analytical$year, na.rm = TRUE)))
 

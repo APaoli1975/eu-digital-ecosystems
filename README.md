@@ -7,15 +7,6 @@
 
 ---
 
-## 📖 Overview
-
-This repository contains all files, datasets, scripts, and outputs related to my Executive MBA final thesis:  
-**"EU Digital Ecosystems: Data-Driven Insights for Policy and Strategy"**.
-
-The project aims to explore the structure, performance, and interconnections of digital ecosystems across the European Union, with case studies focusing on Tallinn and Barcelona. The analysis combines economic, technological, and policy perspectives, using open statistical data and reproducible methods in R and Quarto.
-
----
-
 # eu-digital-ecosystems
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -24,6 +15,14 @@ The project aims to explore the structure, performance, and interconnections of 
 ![Last Commit](https://img.shields.io/github/last-commit/APaoli1975/eu-digital-ecosystems?color=green)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16786258.svg)](https://doi.org/10.5281/zenodo.16786258)
 
+---
+
+## 📖 Overview
+
+This repository contains all files, datasets, scripts, and outputs related to my Executive MBA final thesis:  
+**"EU Digital Ecosystems: Data-Driven Insights for Policy and Strategy"**.
+
+The project aims to explore the structure, performance, and interconnections of digital ecosystems across the European Union, with case studies focusing on Tallinn and Barcelona. The analysis combines economic, technological, and policy perspectives, using open statistical data and reproducible methods in R and Quarto.
 
 ---
 
