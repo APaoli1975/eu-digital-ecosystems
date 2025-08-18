@@ -33,6 +33,7 @@ eu <- bind_rows(
 msg("Eurostat rows: %s | indicators: %s",
     format(nrow(eu), big.mark=","), length(unique(eu$indicator)))
 
+
 # ---- FUA macros from 02 ----
 fp_fua <- "data_clean/oecd_region_econom_barcelona_tallinn_athens_lisbon.csv"
 if (!file.exists(fp_fua)) stop("Missing FUA file: ", fp_fua, call. = FALSE)
@@ -41,16 +42,87 @@ fua_long <- readr::read_csv(fp_fua, show_col_types = FALSE) |>
   janitor::clean_names() |>
   mutate(year = suppressWarnings(as.integer(year)))
 
-# Measures we want as columns
 keep_measures <- c("GDP","EMPW","LAB_PROD")
+
+# Check FUA years per city
+fua_years <- fua_long |>
+  filter(measure %in% keep_measures) |>
+  distinct(city, year) |>
+  arrange(city, year)
+
+message("[03-merge] FUA years by city (sample):")
+print(dplyr::slice_head(fua_years, n = 10))
+
+# 1) Average within city–year–measure, then pivot
 fua_wide <- fua_long |>
   filter(measure %in% keep_measures) |>
-  select(city, year, measure, value) |>
-  distinct() |>
-  tidyr::pivot_wider(names_from = measure, values_from = value)
+  group_by(city, year, measure) |>
+  summarise(value = mean(suppressWarnings(as.numeric(value)), na.rm = TRUE), .groups = "drop") |>
+  tidyr::pivot_wider(names_from = measure, values_from = value) |>
+  janitor::clean_names()   # -> gdp, empw, lab_prod
 
-msg("FUA macro coverage: %s rows | measures: %s",
-    format(nrow(fua_wide), big.mark=","), paste(intersect(keep_measures, names(fua_wide)), collapse=", "))
+msg("FUA macro coverage (deduped): %s rows | measures: %s",
+    format(nrow(fua_wide), big.mark=","), paste(intersect(janitor::make_clean_names(keep_measures), names(fua_wide)), collapse=", "))
+
+# ---- Merge all into analysis panel ----
+# Drop Eurostat rows without a joinable year (cannot match FUA)
+eu_ready <- eu |>
+  mutate(year = suppressWarnings(as.integer(year))) |>
+  filter(!is.na(year)) |>
+  arrange(city, indicator, year)
+
+# Join FUA macros
+eu_base <- eu_ready |>
+  left_join(fua_wide, by = c("city","year"))
+
+# Quick join diagnostics
+macro_ok <- eu_base |>
+  summarise(
+    non_na_gdp  = sum(!is.na(gdp)),
+    non_na_empw = sum(!is.na(empw)),
+    non_na_labp = sum(!is.na(lab_prod))
+  )
+msg("Post-join non-NA counts → gdp: %s | empw: %s | lab_prod: %s",
+    macro_ok$non_na_gdp, macro_ok$non_na_empw, macro_ok$non_na_labp)
+
+# ---- SME finance (optional) ----
+fp_sme <- "data_clean/oecd_sme_fin_ee_es_el_pt.csv"
+sme_wide <- NULL
+if (file.exists(fp_sme)) {
+  sme <- readr::read_csv(fp_sme, show_col_types = FALSE) |>
+    janitor::clean_names() |>
+    mutate(year = suppressWarnings(as.integer(year)))
+  
+  if (nrow(sme) > 0) {
+    city_country <- tibble::tibble(
+      city = c("Tallinn","Barcelona","Athens","Lisbon"),
+      country = c("Estonia","Spain","Greece","Portugal")
+    )
+    sme_wide <- sme |>
+      select(country, year, measure, value) |>
+      group_by(country, year, measure) |>
+      summarise(value = mean(suppressWarnings(as.numeric(value)), na.rm = TRUE), .groups = "drop") |>
+      tidyr::pivot_wider(names_from = measure, values_from = value) |>
+      right_join(city_country, by = "country") |>
+      select(city, country, year, everything())
+    msg("SME finance coverage: %s rows (non-empty).", format(nrow(sme_wide), big.mark=","))
+  } else {
+    msg("SME finance file present but empty — skipping SME join.")
+  }
+} else {
+  msg("SME finance file not found — skipping SME join.")
+}
+
+if (!is.null(sme_wide)) {
+  eu_base <- eu_base |>
+    left_join(sme_wide, by = c("city","year"))
+}
+
+out_path <- "data_clean/analysis_ready_4cities.csv"
+readr::write_csv(eu_base, out_path)
+msg("✅ Wrote %s (%s rows, %s cols).", out_path, format(nrow(eu_base), big.mark=","), ncol(eu_base))
+
+
 
 # ---- SME finance (optional) ----
 fp_sme <- "data_clean/oecd_sme_fin_ee_es_el_pt.csv"

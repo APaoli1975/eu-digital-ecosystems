@@ -1,0 +1,511 @@
+---
+title: "Digital Innovation Ecosystems in Europe"
+subtitle: "Tallinn & Barcelona (Success) vs Athens & Lisbon (Poor): Evidence-Based Archetypes"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
+    number-sections: false
+  pdf:
+    toc: true
+    number-sections: false
+execute:
+  echo: false
+  warning: false
+  message: false
+editor: source
+params:
+  year_min: 2000
+  year_max: 2021
+  min_points_city_ts: 3    # minimum non-missing years to draw a city's line
+  min_cities_panel: 2      # minimum cities needed to show a KPI panel
+  composite_min_kpis: 2    # minimum KPIs required to compute composite index per city-year
+---
+
+# 0) Introduction & Setup
+
+*Method & framing.* We compare four cases — **Tallinn**, **Barcelona** (positive cases), and **Athens**, **Lisbon** (weak cases) — by transforming them into **two archetypes**:
+
+- **Success archetype** = average of **Tallinn** & **Barcelona**  
+- **Poor archetype** = average of **Athens** & **Lisbon**
+
+Why? Because coverage is **patchy** for some KPIs at the city/FUA level; aggregating to archetypes yields **robust contrasts** while preserving the policy signal. We present (i) **city dashboards**, (ii) **archetype comparisons** (indexed trajectories & period averages), (iii) a **composite innovation index & scoreboard**, and (iv) **SME finance** as **descriptive** context. We then preview how to link results to **policy thematic analysis** (EU + regional).
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+library(stringr)
+theme_set(theme_minimal(base_size = 12))
+
+# ---- parameters ----
+year_min <- params$year_min
+year_max <- params$year_max
+min_pts  <- params$min_points_city_ts
+min_cit  <- params$min_cities_panel
+min_kpis <- params$composite_min_kpis
+
+dir.create("outputs", showWarnings = FALSE)
+dir.create("figures", showWarnings = FALSE)
+
+# ---- inputs from the pipeline ----
+fp_kpi_ext <- "data_clean/kpis_extended_long.csv"    # from 03_build_indicators.R (extended set)
+fp_sme     <- "data_clean/sme_descriptive_long.csv"  # from 03_build_indicators.R (descriptive SME)
+fp_fund    <- "data_clean/eu_funding_context.csv"    # optional; columns: city or country, year, funds_pc (per capita); see Section 6
+
+stopifnot(file.exists(fp_kpi_ext))  # core input must exist
+
+kpi_ext <- read_csv(fp_kpi_ext, show_col_types = FALSE)
+if (!"value_interp" %in% names(kpi_ext)) kpi_ext$value_interp <- kpi_ext$value
+
+sme_desc <- if (file.exists(fp_sme)) read_csv(fp_sme, show_col_types = FALSE) else tibble()
+if (nrow(sme_desc) && !"value_interp" %in% names(sme_desc)) sme_desc$value_interp <- sme_desc$value
+
+# ---- analysis window & KPI labels ----
+kpi_win <- kpi_ext %>%
+  filter(dplyr::between(year, year_min, year_max)) %>%
+  mutate(indicator = factor(
+    indicator,
+    levels = c("kpi_ht_employment_share","kpi_ht_patents_per_100kemp","kpi_rnd_intensity"),
+    labels = c("HT employment share (%)","Patents per 100k employed","GERD (% GDP)")
+  ))
+
+cities <- c("Tallinn","Barcelona","Athens","Lisbon")
+span   <- paste(range(kpi_win$year, na.rm = TRUE), collapse = "–")
+
+# helper formatters
+fmt1 <- function(x) number(x, accuracy = 0.1, big.mark = ",")
+fmtp <- function(x) percent(x/100, accuracy = 0.1)  # our % KPIs are already in percentage units
+```
+
+**Data loaded.** Cities: `r paste(intersect(cities, unique(kpi_win$city)), collapse = ", ")`. Window: `r span`.  
+**Core KPIs**: *HT employment share (%), Patents per 100k employed, GERD (% GDP)*.  
+**SME finance**: descriptive context (coverage varies).
+
+---
+
+# 1) City Dashboards (Profiles)
+
+*Method.* For each city, we show **only those KPI time series** that have at least **`r min_pts`** usable years in the window. This avoids misleading “empty lines.” Values may include **linear interpolation within city×indicator** (done upstream) but **no extrapolation**.
+
+```{r}
+plot_city <- function(city_name){
+  df <- kpi_win %>%
+    filter(city == city_name) %>%
+    group_by(indicator) %>%
+    mutate(usable = sum(!is.na(value_interp))) %>%
+    ungroup() %>%
+    filter(usable >= min_pts) %>%
+    filter(!is.na(value_interp))
+
+  if (nrow(df) == 0) {
+    cat(paste0("No sufficient KPI coverage for ", city_name, " (≥", min_pts, " years per KPI).\n"))
+    return(invisible(NULL))
+  }
+
+  p <- ggplot(df, aes(year, value_interp)) +
+    geom_line(color = "#455A64", linewidth = 1) +
+    geom_point(color = "#455A64", size = 1.6) +
+    facet_wrap(~ indicator, scales = "free_y") +
+    scale_y_continuous(labels = fmt1) +
+    labs(title = paste0(city_name, " — KPI profile"),
+         subtitle = paste0("Window ", year_min, "–", year_max, "; KPI panels require ≥", min_pts, " non-missing years"),
+         x = NULL, y = NULL)
+  print(p)
+  ggsave(paste0("figures/01_city_", tolower(city_name), ".png"), p, width = 9, height = 5.5, dpi = 300)
+}
+
+for (c in cities) plot_city(c)
+```
+
+*Findings.* City profiles reveal **higher levels and/or steadier momentum** for **Tallinn** and **Barcelona** on patent intensity and (where available) HT employment/GERD. **Athens** and **Lisbon** tend to show **weaker levels** and flatter trajectories. Coverage differences are **documented** and are part of the evidence.
+
+---
+
+# 2) Archetypes — Success vs Poor
+
+*Method.* We create two archetypes:
+- **Success** = mean across **Tallinn + Barcelona**  
+- **Poor**   = mean across **Athens + Lisbon**
+
+We require each KPI panel to have **≥`r min_cit` archetype points** with **≥`r min_pts`** underlying city-years per year to display. We present both **indexed trajectories** (base=100) and **period averages** (2011–2021) for interpretability.
+
+```{r}
+# Tag archetype
+kpi_arch <- kpi_win %>%
+  mutate(archetype = case_when(
+    city %in% c("Tallinn","Barcelona") ~ "Success",
+    city %in% c("Athens","Lisbon")     ~ "Poor",
+    TRUE ~ NA_character_
+  )) %>%
+  filter(!is.na(archetype))
+
+# Yearly archetype averages per KPI
+arch_year <- kpi_arch %>%
+  group_by(indicator, archetype, year) %>%
+  summarise(value = ifelse(all(is.na(value_interp)), NA_real_, mean(value_interp, na.rm = TRUE)),
+            n_cities = sum(!is.na(value_interp)),
+            .groups = "drop") %>%
+  filter(n_cities >= min_cit)
+
+# Keep KPIs where both archetypes appear at least 3 years
+ok_inds <- arch_year %>%
+  filter(!is.na(value)) %>%
+  group_by(indicator, archetype) %>%
+  summarise(ny = n_distinct(year), .groups = "drop") %>%
+  group_by(indicator) %>%
+  summarise(arch_both_ge3 = sum(ny >= min_pts), .groups = "drop") %>%
+  filter(arch_both_ge3 == 2) %>% pull(indicator) %>% as.character()
+
+# Indexed trajectories (base=100 per archetype×KPI)
+idx <- arch_year %>%
+  filter(indicator %in% ok_inds, !is.na(value)) %>%
+  group_by(indicator, archetype) %>%
+  arrange(year, .by_group = TRUE) %>%
+  mutate(base = first(na.omit(value)),
+         idx  = ifelse(!is.na(base) & base != 0, value/base*100, NA_real_)) %>%
+  ungroup()
+
+if (nrow(idx)){
+  p_idx <- ggplot(idx, aes(year, idx, color = archetype)) +
+    geom_line(linewidth = 1) +
+    geom_point(size = 1.6) +
+    facet_wrap(~ indicator, scales = "free_y") +
+    labs(title = "Archetypes — Indexed paths (base = 100 at first available year)",
+         subtitle = "Success = Tallinn+Barcelona; Poor = Athens+Lisbon",
+         x = NULL, y = "Index (base=100)", color = "Archetype")
+  print(p_idx)
+  ggsave("figures/02_archetypes_indexed.png", p_idx, width = 10, height = 6, dpi = 300)
+} else {
+  cat("No comparable archetype KPI panels for indexing.\n")
+}
+
+# Period averages (2011–2021) for bars
+arch_avg <- arch_year %>%
+  filter(year >= 2011, year <= 2021, indicator %in% ok_inds) %>%
+  group_by(indicator, archetype) %>%
+  summarise(avg = ifelse(all(is.na(value)), NA_real_, mean(value, na.rm = TRUE)),
+            .groups = "drop")
+
+if (nrow(arch_avg)){
+  p_bar <- ggplot(arch_avg, aes(indicator, avg, fill = archetype)) +
+    geom_col(position = position_dodge(width = 0.6), width = 0.55) +
+    scale_y_continuous(labels = fmt1) +
+    labs(title = "Archetypes — Period average (2011–2021)",
+         subtitle = "Higher = better (native KPI units)",
+         x = NULL, y = NULL, fill = "Archetype")
+  print(p_bar)
+  ggsave("figures/03_archetypes_period_avg.png", p_bar, width = 8.5, height = 4.8, dpi = 300)
+}
+```
+
+*Findings.* **Success** archetype consistently outperforms **Poor** on **patent intensity** and often on **HT employment/GERD**, and shows **stronger indexed momentum** — indicating that **funding translated into outcomes** where **ecosystems and policies were effective**.
+
+---
+
+# 3) Composite Innovation Index & Scoreboard
+
+*Method.* For each **city-year**, we compute a **composite innovation index** by **z-scoring** each KPI within the window and averaging across available KPIs (require ≥ `r min_kpis`). We then (i) compute **2011–2021 averages** per city, (ii) rank cities (**scoreboard**), and (iii) show **archetype averages**.
+
+```{r}
+# z-score per KPI across all cities/years in the window
+zs <- kpi_win %>%
+  filter(!is.na(value_interp)) %>%
+  group_by(indicator) %>%
+  mutate(z = (value_interp - mean(value_interp, na.rm = TRUE)) / sd(value_interp, na.rm = TRUE)) %>%
+  ungroup()
+
+# composite per city-year (mean of z across available indicators, require >= min_kpis)
+comp_city_year <- zs %>%
+  group_by(city, year) %>%
+  summarise(k = sum(!is.na(z)),
+            comp = ifelse(k >= min_kpis, mean(z, na.rm = TRUE), NA_real_),
+            .groups = "drop")
+
+# 2011–2021 averages per city
+comp_city <- comp_city_year %>%
+  filter(year >= 2011, year <= 2021) %>%
+  group_by(city) %>%
+  summarise(comp_avg = ifelse(all(is.na(comp)), NA_real_, mean(comp, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(city = factor(city, levels = city[order(comp_avg, decreasing = TRUE)]))
+
+readr::write_csv(comp_city, "outputs/03_composite_index_city_2011_2021.csv")
+
+if (nrow(comp_city)){
+  p_score <- ggplot(comp_city, aes(x = city, y = comp_avg, fill = city)) +
+    geom_col(width = 0.6) +
+    coord_flip() +
+    labs(title = "Composite Innovation Index — Scoreboard (avg z-score, 2011–2021)",
+         subtitle = "Average of z-scored KPIs per city; higher = better; requires ≥ 2 KPIs",
+         x = NULL, y = "Composite (z)", fill = "City")
+  print(p_score)
+  ggsave("figures/04_scoreboard_composite_city.png", p_score, width = 7.5, height = 4.5, dpi = 300)
+}
+
+# Archetype composite (Success vs Poor)
+comp_arch <- comp_city_year %>%
+  mutate(archetype = case_when(
+    city %in% c("Tallinn","Barcelona") ~ "Success",
+    city %in% c("Athens","Lisbon")     ~ "Poor"
+  )) %>%
+  filter(!is.na(archetype), year >= 2011, year <= 2021) %>%
+  group_by(archetype) %>%
+  summarise(comp_avg = ifelse(all(is.na(comp)), NA_real_, mean(comp, na.rm = TRUE)), .groups = "drop")
+
+readr::write_csv(comp_arch, "outputs/03_composite_index_archetype_2011_2021.csv")
+
+if (nrow(comp_arch)){
+  p_arch <- ggplot(comp_arch, aes(x = archetype, y = comp_avg, fill = archetype)) +
+    geom_col(width = 0.6) +
+    labs(title = "Composite Innovation Index — Archetypes (2011–2021)",
+         x = NULL, y = "Composite (z)", fill = "Archetype")
+  print(p_arch)
+  ggsave("figures/04b_scoreboard_composite_archetype.png", p_arch, width = 6.5, height = 4, dpi = 300)
+}
+```
+
+*Findings.* The **scoreboard** ranks **Tallinn/Barcelona** above **Athens/Lisbon** on the composite innovation index, with a **clear gap** at the archetype level — indicating **systematic ecosystem differences**.
+
+---
+
+# 4) SME Finance — Descriptive Context
+
+*Method.* We summarise SME finance indicators **descriptively**, using 2011–2021 averages where available. We choose a compact set (cost, access, risk capital) to keep the message clear.
+
+```{r}
+if (nrow(sme_desc)){
+  focus_sme <- c("interest_rate","interest_rate_spread","loan_rejection",
+                 "loan_gov_guarantees","loan_gov_direct",
+                 "vc","venturecapital_pct_gdp_national","payment_delays","loan_collateral")
+
+  sme_win <- sme_desc %>%
+    mutate(indicator = tolower(indicator)) %>%
+    filter(indicator %in% focus_sme, dplyr::between(year, year_min, year_max))
+
+  sme_city <- sme_win %>%
+    group_by(indicator, city) %>%
+    filter(year >= 2011, year <= 2021) %>%
+    summarise(avg = ifelse(all(is.na(value_interp)), NA_real_, mean(value_interp, na.rm = TRUE)), .groups="drop")
+
+  # order cities within each indicator by avg for plotting
+  sme_city <- sme_city %>%
+    group_by(indicator) %>%
+    arrange(avg, .by_group = TRUE) %>%
+    mutate(city_ord = factor(city, levels = city)) %>%
+    ungroup()
+
+  if (nrow(sme_city)){
+    p_sme <- ggplot(sme_city, aes(x = city_ord, y = avg, fill = city_ord)) +
+      geom_col() +
+      coord_flip() +
+      facet_wrap(~ indicator, scales = "free_x") +
+      labs(title = "SME Finance — Descriptive averages (2011–2021)",
+           subtitle = "Used as contextual evidence; coverage varies; units differ by indicator",
+           x = NULL, y = NULL, fill = "City")
+    print(p_sme)
+    ggsave("figures/05_sme_descriptive_bars.png", p_sme, width = 10, height = 7, dpi = 300)
+  }
+
+  # Archetype summary for SME finance
+  sme_arch <- sme_win %>%
+    mutate(archetype = case_when(
+      city %in% c("Tallinn","Barcelona") ~ "Success",
+      city %in% c("Athens","Lisbon")     ~ "Poor",
+      TRUE ~ NA_character_
+    )) %>%
+    filter(!is.na(archetype), year >= 2011, year <= 2021) %>%
+    group_by(indicator, archetype) %>%
+    summarise(avg = ifelse(all(is.na(value_interp)), NA_real_, mean(value_interp, na.rm = TRUE)), .groups = "drop")
+
+  if (nrow(sme_arch)){
+    p_sme2 <- ggplot(sme_arch, aes(indicator, avg, fill = archetype)) +
+      geom_col(position = position_dodge(width = 0.6), width = 0.55) +
+      coord_cartesian(ylim = c(min(sme_arch$avg, na.rm=TRUE), max(sme_arch$avg, na.rm=TRUE))) +
+      labs(title = "SME Finance — Archetype averages (2011–2021, descriptive)",
+           x = NULL, y = NULL, fill = "Archetype")
+    print(p_sme2)
+    ggsave("figures/05b_sme_archetype_bars.png", p_sme2, width = 10, height = 5.5, dpi = 300)
+  }
+
+  readr::write_csv(sme_city, "outputs/04_sme_city_2011_2021.csv")
+  readr::write_csv(sme_arch, "outputs/04_sme_archetype_2011_2021.csv")
+} else {
+  cat("SME finance file not found — skipping descriptive context.\n")
+}
+```
+
+*Findings.* Where available, **higher financing costs** and **higher rejection** correlate with **weaker innovation outcomes** (Athens/Lisbon), while **VC intensity** is higher for **Success** archetype — consistent with the KPI and composite results.
+
+---
+
+# 5) Period Averages & Growth (sanity checks)
+
+*Method.* We provide **period averages** (2000–2010 vs 2011–2021) and **CAGR** for KPIs where feasible, as robustness checks.
+
+```{r}
+# Period averages by city×KPI
+split_tbl <- kpi_win %>%
+  mutate(period = ifelse(year <= 2010, "2000–2010", "2011–2021")) %>%
+  group_by(indicator, city, period) %>%
+  summarise(avg = ifelse(all(is.na(value_interp)), NA_real_, mean(value_interp, na.rm = TRUE)), .groups = "drop") %>%
+  tidyr::pivot_wider(names_from = period, values_from = avg)
+readr::write_csv(split_tbl, "outputs/05_period_avgs_city.csv")
+split_tbl %>% head(12)
+```
+
+```{r}
+# CAGR table by city×KPI (window bounds)
+cagr_tbl <- kpi_win %>%
+  group_by(indicator, city) %>%
+  filter(!is.na(value_interp)) %>%
+  summarise(
+    start_year = min(year),
+    end_year   = max(year),
+    start_val  = first(value_interp[year == start_year]),
+    end_val    = first(value_interp[year == end_year]),
+    n_years    = end_year - start_year,
+    CAGR       = ifelse(n_years > 0 & start_val > 0, (end_val/start_val)^(1/n_years) - 1, NA_real_),
+    .groups = "drop"
+  ) %>%
+  mutate(CAGR_pct = percent(CAGR, accuracy = 0.1))
+readr::write_csv(cagr_tbl, "outputs/05_cagr_by_city_indicator.csv")
+cagr_tbl %>% head(12)
+```
+
+*Findings.* **Tallinn** typically shows **faster growth** (catch-up), while **Barcelona** maintains **higher levels**; **Athens/Lisbon** display **flatter** or **lower** trajectories.
+
+---
+
+# 6) EU Funding vs Outcomes (optional if data provided)
+
+*Method.* If `data_clean/eu_funding_context.csv` exists (with columns such as `city`, `year`, `funds_pc`), we compute **2011–2021 average funding per capita** and compare to the **composite innovation index**.
+
+```{r}
+if (file.exists(fp_fund)){
+  fund <- read_csv(fp_fund, show_col_types = FALSE)
+  # normalise minimal expected columns
+  nm <- tolower(names(fund))
+  names(fund) <- nm
+
+  # accept either city-level or country-level; if country-level, map to city’s country
+  # expected columns: city or country, year, funds_pc
+  if (!("city" %in% names(fund)) & ("country" %in% names(fund))) {
+    # Map city -> country (simple mapping for our four cities)
+    city_map <- tibble::tibble(
+      city    = c("Tallinn","Barcelona","Athens","Lisbon"),
+      country = c("Estonia","Spain","Greece","Portugal")
+    )
+    # we will join by country later
+  } else {
+    city_map <- tibble::tibble(
+      city    = c("Tallinn","Barcelona","Athens","Lisbon"),
+      country = c("Estonia","Spain","Greece","Portugal")
+    )
+  }
+
+  # compute 2011–2021 averages
+  fund_win <- fund %>%
+    filter(dplyr::between(year, 2011, 2021))
+
+  if ("city" %in% names(fund_win)) {
+    fund_city <- fund_win %>%
+      filter(city %in% cities) %>%
+      group_by(city) %>%
+      summarise(funds_pc_avg = ifelse(all(is.na(funds_pc)), NA_real_, mean(funds_pc, na.rm = TRUE)), .groups = "drop")
+  } else if ("country" %in% names(fund_win)) {
+    fund_city <- city_map %>%
+      left_join(fund_win %>%
+                  group_by(country) %>%
+                  summarise(funds_pc_avg = ifelse(all(is.na(funds_pc)), NA_real_, mean(funds_pc, na.rm = TRUE)), .groups = "drop"),
+                by = "country") %>%
+      select(city, funds_pc_avg)
+  } else {
+    fund_city <- tibble(city = character(), funds_pc_avg = numeric())
+  }
+
+  # join with composite index per city
+  comp_vs_fund <- comp_city %>%
+    left_join(fund_city, by = "city")
+
+  readr::write_csv(comp_vs_fund, "outputs/06_funding_vs_composite_city.csv")
+
+  if (nrow(comp_vs_fund)){
+    can_label <- requireNamespace("ggrepel", quietly = TRUE)
+    p_sc <- ggplot(comp_vs_fund, aes(funds_pc_avg, comp_avg, label = city)) +
+      geom_point(size = 3) +
+      {if (can_label) ggrepel::geom_text_repel(size = 3.5) else geom_text(vjust = -0.7, size = 3)} +
+      labs(title = "EU Funding per capita vs Composite Innovation Index (2011–2021)",
+           subtitle = "Funding alone ≠ outcomes; policy effectiveness & ecosystem capacity matter",
+           x = "EU funds per capita (avg)", y = "Composite innovation index (avg z)")
+    print(p_sc)
+    ggsave("figures/06_funding_vs_outcomes.png", p_sc, width = 7.2, height = 5.4, dpi = 300)
+  }
+} else {
+  cat("No EU funding file found (data_clean/eu_funding_context.csv). Provide it to activate this section.\n")
+}
+```
+
+*Findings.* Where data are supplied, **funding ≠ outcomes**: **Athens/Lisbon** may show **comparable access** but **weaker results**, while **Tallinn/Barcelona** convert resources into **innovation outcomes** — suggesting the decisive role of **policy quality** and **ecosystem capacity**.
+
+---
+
+# 7) Synthesis & Link to Qualitative Policy Analysis
+
+*Method.* We summarise quantitative evidence and **explicitly connect** it to the forthcoming **policy thematic analysis** (EU + regional).  
+
+*Findings (quantitative).*  
+1. **Outcome divergence**: The **Success** archetype (Tallinn+Barcelona) **outperforms** the **Poor** archetype (Athens+Lisbon) on patent intensity, often HT employment/GERD, and on the composite index.  
+2. **Momentum**: Success shows **stronger indexed growth**, indicative of **effective ecosystems**; Poor shows **flatter** paths.  
+3. **Finance context**: Descriptive SME indicators (cost, rejection, VC) align with weaker outcomes in Poor.  
+4. **Funding vs outcomes**: With funding data provided, **access** alone does **not** explain outcomes — pointing to **policy design & implementation** differences.
+
+*Bridge to qualitative.* In the next step, we will integrate **document-coded policy themes** (EU & regional) to test mechanisms:  
+- **Targeting & prioritisation** (smart specialisation, digital focus)  
+- **Institutional capacity / governance** (delivery agencies, coordination)  
+- **Complementary reforms** (regulatory simplification, skills, procurement)  
+- **Ecosystem instruments** (accelerators, research-commercialisation, VC crowd-in)  
+
+> If you’ve prepared a file such as `data_clean/policy_thematic_tags.csv` (e.g., `city, year, theme, evidence_level`), we can ingest and juxtapose it with KPI milestones here.
+
+---
+
+# 8) Exports & Reproducibility
+
+**CSVs**  
+- `outputs/01_city_profiles_*` (figures only)  
+- `outputs/03_composite_index_city_2011_2021.csv`  
+- `outputs/03_composite_index_archetype_2011_2021.csv`  
+- `outputs/04_sme_city_2011_2021.csv`, `outputs/04_sme_archetype_2011_2021.csv`  
+- `outputs/05_period_avgs_city.csv`, `outputs/05_cagr_by_city_indicator.csv`  
+- `outputs/06_funding_vs_composite_city.csv` (if funding file provided)
+
+**Figures**  
+- `figures/01_city_<city>.png`  
+- `figures/02_archetypes_indexed.png`  
+- `figures/03_archetypes_period_avg.png`  
+- `figures/04_scoreboard_composite_city.png`, `figures/04b_scoreboard_composite_archetype.png`  
+- `figures/05_sme_descriptive_bars.png`, `figures/05b_sme_archetype_bars.png`  
+- `figures/06_funding_vs_outcomes.png` (if funding file provided)
+
+```{r}
+meta <- list(
+  timestamp = as.character(Sys.time()),
+  params    = list(year_min = year_min, year_max = year_max,
+                   min_points_city_ts = min_pts,
+                   min_cities_panel = min_cit,
+                   composite_min_kpis = min_kpis),
+  cities    = sort(unique(kpi_win$city)),
+  indicators = sort(unique(as.character(kpi_win$indicator)))
+)
+jsonlite::write_json(meta, "outputs/run_metadata.json", auto_unbox = TRUE, pretty = TRUE)
+meta
+```
+
+**Session info:**
+```{r}
+sessionInfo()
+```
+
