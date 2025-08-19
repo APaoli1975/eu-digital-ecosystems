@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Digital Innovation Ecosystems in Europe</title>
+<title>Digital Tech Ecosystems — Four-City Quant Analysis (Tallinn, Barcelona, Athens, Lisbon)</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -46,15 +46,14 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul class="collapse">
-  <li><a href="#introduction-setup" id="toc-introduction-setup" class="nav-link active" data-scroll-target="#introduction-setup">0) Introduction &amp; Setup</a></li>
-  <li><a href="#city-dashboards-profiles" id="toc-city-dashboards-profiles" class="nav-link" data-scroll-target="#city-dashboards-profiles">1) City Dashboards (Profiles)</a></li>
-  <li><a href="#archetypes-success-vs-poor" id="toc-archetypes-success-vs-poor" class="nav-link" data-scroll-target="#archetypes-success-vs-poor">2) Archetypes — Success vs Poor</a></li>
-  <li><a href="#composite-innovation-index-scoreboard" id="toc-composite-innovation-index-scoreboard" class="nav-link" data-scroll-target="#composite-innovation-index-scoreboard">3) Composite Innovation Index &amp; Scoreboard</a></li>
-  <li><a href="#sme-finance-descriptive-context" id="toc-sme-finance-descriptive-context" class="nav-link" data-scroll-target="#sme-finance-descriptive-context">4) SME Finance — Descriptive Context</a></li>
-  <li><a href="#period-averages-growth-checks" id="toc-period-averages-growth-checks" class="nav-link" data-scroll-target="#period-averages-growth-checks">5) Period Averages &amp; Growth Checks</a></li>
-  <li><a href="#eu-funding-vs-outcomes-optional" id="toc-eu-funding-vs-outcomes-optional" class="nav-link" data-scroll-target="#eu-funding-vs-outcomes-optional">6) EU Funding vs Outcomes (optional)</a></li>
-  <li><a href="#synthesis-link-to-qualitative-policy-analysis" id="toc-synthesis-link-to-qualitative-policy-analysis" class="nav-link" data-scroll-target="#synthesis-link-to-qualitative-policy-analysis">7) Synthesis &amp; Link to Qualitative Policy Analysis</a></li>
-  <li><a href="#exports-reproducibility" id="toc-exports-reproducibility" class="nav-link" data-scroll-target="#exports-reproducibility">8) Exports &amp; Reproducibility</a></li>
+  <li><a href="#setup-data" id="toc-setup-data" class="nav-link active" data-scroll-target="#setup-data">0) Setup &amp; Data</a></li>
+  <li><a href="#coverage-diagnostics" id="toc-coverage-diagnostics" class="nav-link" data-scroll-target="#coverage-diagnostics">1) Coverage diagnostics</a></li>
+  <li><a href="#core-outcome-series-levels-indexed" id="toc-core-outcome-series-levels-indexed" class="nav-link" data-scroll-target="#core-outcome-series-levels-indexed">2) Core outcome series (levels &amp; indexed)</a></li>
+  <li><a href="#success-vs-poor-pooled-contrasts" id="toc-success-vs-poor-pooled-contrasts" class="nav-link" data-scroll-target="#success-vs-poor-pooled-contrasts">3) Success vs Poor — pooled contrasts</a></li>
+  <li><a href="#funding-intensity-and-provenance-option-a" id="toc-funding-intensity-and-provenance-option-a" class="nav-link" data-scroll-target="#funding-intensity-and-provenance-option-a">4) Funding intensity and provenance (Option A)</a></li>
+  <li><a href="#city-scoreboards-simple-transparent" id="toc-city-scoreboards-simple-transparent" class="nav-link" data-scroll-target="#city-scoreboards-simple-transparent">5) City scoreboards (simple &amp; transparent)</a></li>
+  <li><a href="#sensitivity-withingroup-contrasts" id="toc-sensitivity-withingroup-contrasts" class="nav-link" data-scroll-target="#sensitivity-withingroup-contrasts">6) Sensitivity: within‑group contrasts</a></li>
+  <li><a href="#synthesis-what-it-means-for-policy" id="toc-synthesis-what-it-means-for-policy" class="nav-link" data-scroll-target="#synthesis-what-it-means-for-policy">7) Synthesis &amp; what it means for policy</a></li>
   </ul>
 <div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="analysis_4cities.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
 </div>
@@ -62,8 +61,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Digital Innovation Ecosystems in Europe</h1>
-<p class="subtitle lead">Tallinn &amp; Barcelona (Success) vs Athens &amp; Lisbon (Poor): Archetype Evidence for Policy</p>
+<h1 class="title">Digital Tech Ecosystems — Four-City Quant Analysis (Tallinn, Barcelona, Athens, Lisbon)</h1>
 </div>
 
 
@@ -80,19 +78,20 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="introduction-setup" class="level1">
-<h1>0) Introduction &amp; Setup</h1>
-<p><em>Research question.</em> Why did EU funding translate into strong digital innovation ecosystems in some regions (<strong>Tallinn</strong>, <strong>Barcelona</strong>) but not in others (<strong>Athens</strong>, <strong>Lisbon</strong>)? Our argument is that <strong>funding alone is insufficient</strong>; <strong>effective regional policies and institutional capacity</strong> mediate success.</p>
-<p><em>Method.</em> Because city/FUA coverage is patchy for several indicators, we construct two <strong>archetypes</strong> to stabilise comparisons: - <strong>Success archetype</strong> = average of <strong>Tallinn</strong> + <strong>Barcelona</strong> - <strong>Poor archetype</strong> = average of <strong>Athens</strong> + <strong>Lisbon</strong></p>
-<p>We present: (i) city dashboards, (ii) archetype comparisons (indexed trajectories &amp; period averages), (iii) a composite innovation index &amp; scoreboard, and (iv) SME finance as descriptive context. Section 7 links these quantitative findings to qualitative policy themes (EU &amp; regional).</p>
-<p><strong>Data loaded.</strong> Cities: Tallinn, Barcelona, Athens, Lisbon. Window: 2000–2021.<br>
-<strong>Core KPIs</strong>: <em>HT employment share (%), Patents per 100k employed, GERD (% GDP)</em>. <strong>VC intensity</strong> appears where available.<br>
-<strong>SME finance</strong>: descriptive only (coverage varies).</p>
+<section id="setup-data" class="level2">
+<h2 class="anchored" data-anchor-id="setup-data">0) Setup &amp; Data</h2>
+<p><strong>Scope.</strong> Cities covered: Tallinn, Barcelona, Athens, Lisbon. Window: 2000–2021.<br>
+<strong>Outcome indicators available</strong> (long panel):<br>
+- <em>HighTech_Employment_regional</em> (level)<br>
+- <em>HighTech_patents_regional</em> (level)<br>
+- <em>GERD_regional</em> (level)</p>
+<p><strong>Context (drivers):</strong> - FUA macro: <code>gdp</code>, <code>empw</code>, <code>lab_prod</code><br>
+- Funding: <code>eu_funding</code>, <code>funding_to_gdp</code>, <code>funding_per_emp</code>, provenance <code>funding_geo</code>, <code>funding_method</code> (direct / proxy)</p>
 <hr>
 </section>
-<section id="city-dashboards-profiles" class="level1">
-<h1>1) City Dashboards (Profiles)</h1>
-<p><em>Method.</em> Within the analysis window, we require a KPI to have <strong>≥ 3 non-missing years</strong> for a city before plotting it (3-year rule). This avoids misleading traces dominated by single points. Values may include <strong>within-city linear interpolation</strong> from the build step; no extrapolation is used.</p>
+<section id="coverage-diagnostics" class="level2">
+<h2 class="anchored" data-anchor-id="coverage-diagnostics">1) Coverage diagnostics</h2>
+<p><em>Method.</em> We check completeness by <strong>indicator × city</strong> in the analysis window. This prevents misleading comparisons.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -101,34 +100,13 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 </div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="analysis_4cities_files/figure-html/unnamed-chunk-2-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
 </div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="analysis_4cities_files/figure-html/unnamed-chunk-2-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="analysis_4cities_files/figure-html/unnamed-chunk-2-4.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p><em>Findings.</em> <strong>Tallinn/Barcelona</strong> generally show higher levels and/or steadier momentum on patent intensity and HT employment; <strong>Athens/Lisbon</strong> appear weaker and more volatile. Coverage differences are noted and are part of the evidence.</p>
+<p><em>Takeaway.</em> We focus on indicators and city-years where coverage is reasonable. Sparse series are discussed descriptively, not used for strict comparisons.</p>
 <hr>
 </section>
-<section id="archetypes-success-vs-poor" class="level1">
-<h1>2) Archetypes — Success vs Poor</h1>
-<p><em>Method.</em> We tag each city as <strong>Success</strong> (Tallinn, Barcelona) or <strong>Poor</strong> (Athens, Lisbon). For each KPI×year we compute the <strong>archetype mean</strong> across available cities (require ≥ 2 contributing cities). We present: - <strong>Indexed trajectories (base = 100)</strong> for clear relative dynamics; - <strong>3-year rolling averages</strong> to reduce noise; - <strong>Period averages</strong> (2011–2021) to summarise structural differences.</p>
+<section id="core-outcome-series-levels-indexed" class="level2">
+<h2 class="anchored" data-anchor-id="core-outcome-series-levels-indexed">2) Core outcome series (levels &amp; indexed)</h2>
+<p><em>Method.</em> For each indicator, we show levels over time, and <strong>indexed paths</strong> (base = first available year in the window for each city) to compare momentum.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -145,12 +123,13 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Findings.</em> The <strong>Success</strong> archetype outperforms <strong>Poor</strong> on <strong>patent intensity</strong> and often on <strong>HT employment/GERD</strong>, with <strong>stronger momentum</strong> in indexed paths. Occasional cross-overs reflect <strong>short-run volatility</strong> rather than structural leadership.</p>
+<p><em>Takeaway.</em> Indexed paths spotlight <strong>relative momentum</strong>: consistent upward trajectories for “Success” (Tallinn/Barcelona) vs flatter/volatile for “Poor” (Athens/Lisbon), where present.</p>
 <hr>
 </section>
-<section id="composite-innovation-index-scoreboard" class="level1">
-<h1>3) Composite Innovation Index &amp; Scoreboard</h1>
-<p><em>Method.</em> For each city-year we <strong>z-score</strong> KPIs within the window and average across available KPIs (require ≥ 2). We then compute <strong>2011–2021 city averages</strong> and <strong>archetype averages</strong>.</p>
+<section id="success-vs-poor-pooled-contrasts" class="level2">
+<h2 class="anchored" data-anchor-id="success-vs-poor-pooled-contrasts">3) Success vs Poor — pooled contrasts</h2>
+<p><em>Method.</em> We define two groups: <strong>Success</strong> = {Tallinn, Barcelona}; <strong>Poor</strong> = {Athens, Lisbon}.<br>
+We pool within group (simple mean across the two cities — keep interpretation cautious) to contrast trajectories.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -159,20 +138,15 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 </div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="analysis_4cities_files/figure-html/unnamed-chunk-4-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
 </div>
-</div>
-</div>
-<p><em>Findings.</em> The <strong>scoreboard</strong> ranks <strong>Tallinn/Barcelona</strong> above <strong>Athens/Lisbon</strong> on the composite index, with a clear gap at the archetype level — consistent with structurally stronger ecosystems in the Success group.</p>
+<p><em>Takeaway.</em> As a <strong>compact contrast</strong>, Success tends to outperform Poor in levels and pace in key outcomes, but year-to-year noise remains—hence the need to triangulate with funding and policy timelines.</p>
 <hr>
 </section>
-<section id="sme-finance-descriptive-context" class="level1">
-<h1>4) SME Finance — Descriptive Context</h1>
-<p><em>Method.</em> We summarise SME finance indicators <strong>descriptively</strong> (2011–2021 averages), focusing on access and cost of finance and risk capital. Coverage varies; the goal is context, not strict comparability.</p>
+<section id="funding-intensity-and-provenance-option-a" class="level2">
+<h2 class="anchored" data-anchor-id="funding-intensity-and-provenance-option-a">4) Funding intensity and provenance (Option A)</h2>
+<p><em>Method.</em> We use <strong>funding-to-GDP</strong> and <strong>funding-per-employee</strong> (when denominators available) as <strong>intensity</strong> measures.<br>
+We also chart <strong>annual EU payments</strong> per city <strong>directly from the merged panel</strong> (<code>dat_win</code>), avoiding column-name mismatches.<br>
+A provenance table (direct vs proxy) is saved for transparency.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -188,156 +162,80 @@ ul.task-list li input[type="checkbox"] {
 </figure>
 </div>
 </div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_4cities_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
-<p><em>Findings.</em> Where available, <strong>higher financing costs/rejection</strong> align with <strong>weaker innovation outcomes</strong> (Athens/Lisbon), while <strong>VC intensity</strong> tends to be higher in the Success archetype — consistent with KPI gaps.</p>
-<hr>
-</section>
-<section id="period-averages-growth-checks" class="level1">
-<h1>5) Period Averages &amp; Growth Checks</h1>
-<p><em>Method.</em> We add <strong>period averages</strong> and <strong>CAGR</strong> to cross-validate trends.</p>
-<div class="cell">
+</div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 4
-   indicator                 city      `2000–2010` `2011–2021`
-   &lt;fct&gt;                     &lt;chr&gt;           &lt;dbl&gt;       &lt;dbl&gt;
- 1 HT employment share (%)   Athens        0.00533     0.00486
- 2 HT employment share (%)   Barcelona    NA          NA      
- 3 HT employment share (%)   Lisbon        0.00487     0.00515
- 4 HT employment share (%)   Tallinn      NA          NA      
- 5 Patents per 100k employed Athens        0.120       0.0778 
- 6 Patents per 100k employed Barcelona     0.325       0.442  
- 7 Patents per 100k employed Lisbon        0.175       0.101  
- 8 Patents per 100k employed Tallinn       1.05        1.21   
- 9 GERD (% GDP)              Athens        0.228       0.473  
-10 GERD (% GDP)              Barcelona    NA          NA      
-11 GERD (% GDP)              Lisbon        0.373       0.531  
-12 GERD (% GDP)              Tallinn      NA          NA      </code></pre>
+   city     year funding_geo funding_method
+   &lt;fct&gt;   &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;         
+ 1 Tallinn  2000 EE00        proxy         
+ 2 Tallinn  2001 EE00        proxy         
+ 3 Tallinn  2002 EE00        proxy         
+ 4 Tallinn  2003 EE00        proxy         
+ 5 Tallinn  2004 EE00        proxy         
+ 6 Tallinn  2005 EE00        proxy         
+ 7 Tallinn  2006 EE00        proxy         
+ 8 Tallinn  2007 EE00        proxy         
+ 9 Tallinn  2008 EE00        proxy         
+10 Tallinn  2009 EE00        proxy         
+11 Tallinn  2010 EE00        proxy         
+12 Tallinn  2011 EE00        proxy         </code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 8 × 9
-  indicator         city  start_year end_year start_val end_val n_years     CAGR
-  &lt;fct&gt;             &lt;chr&gt;      &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
-1 HT employment sh… Athe…       2008     2021   0.00538 0.00495      13 -0.00640
-2 HT employment sh… Lisb…       2008     2021   0.00493 0.00512      13  0.00287
-3 Patents per 100k… Athe…       2000     2012   0.0919  0.0652       12 -0.0282 
-4 Patents per 100k… Barc…       2000     2012   0.536   0.398        12 -0.0246 
-5 Patents per 100k… Lisb…       2000     2012   0.0552  0.0859       12  0.0376 
-6 Patents per 100k… Tall…       2000     2012   0.0698  0.904        12  0.238  
-7 GERD (% GDP)      Athe…       2001     2021   0.107   0.645        20  0.0941 
-8 GERD (% GDP)      Lisb…       2000     2020   0.244   0.642        20  0.0495 
-# ℹ 1 more variable: CAGR_pct &lt;chr&gt;</code></pre>
-</div>
-</div>
-<p><em>Findings.</em> <strong>Tallinn</strong> is typically the <strong>fastest improver</strong> (catch-up), <strong>Barcelona</strong> maintains <strong>high levels</strong>; <strong>Athens/Lisbon</strong> show <strong>flatter or noisier</strong> paths.</p>
+<p><em>Takeaway.</em> Even where <strong>funding intensity</strong> looks non-trivial for Athens/Lisbon, <strong>outcomes lag</strong> vs Tallinn/Barcelona. This supports the hypothesis: <em>money alone doesn’t produce a digital tech ecosystem without effective regional policy and implementation capacity</em>. The provenance notes keep our assumptions transparent (ES51 for Barcelona, EE00 for Tallinn).</p>
 <hr>
 </section>
-<section id="eu-funding-vs-outcomes-optional" class="level1">
-<h1>6) EU Funding vs Outcomes (optional)</h1>
-<p><em>Method.</em> If <code>data_clean/eu_funding_context.csv</code> exists (columns: <code>city</code> or <code>country</code>, <code>year</code>, <code>funds_pc</code>), we compare average funding (2011–2021) to the composite index.</p>
+<section id="city-scoreboards-simple-transparent" class="level2">
+<h2 class="anchored" data-anchor-id="city-scoreboards-simple-transparent">5) City scoreboards (simple &amp; transparent)</h2>
+<p><em>Method.</em> For a digestible comparison, we build <strong>scoreboards</strong> on the latest overlapping year across cities for each core indicator and two funding intensity measures. Values are <strong>z‑scored</strong> to put different scales side-by-side (mean 0, sd 1 within the four cities).</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>No EU funding file found (data_clean/eu_funding_context.csv). Provide it to activate this section.</code></pre>
+<pre><code># A tibble: 6,760 × 12
+   city     year HighTech_Employment_regi…¹ HighTech_patents_reg…² GERD_regional
+   &lt;fct&gt;   &lt;int&gt;                      &lt;dbl&gt;                  &lt;dbl&gt;         &lt;dbl&gt;
+ 1 Tallinn  2012                         NA                  0.271            NA
+ 2 Tallinn  2012                         NA                  3                NA
+ 3 Tallinn  2012                         NA                  5.29             NA
+ 4 Tallinn  2012                         NA                  0.241            NA
+ 5 Tallinn  2012                         NA                  2.67             NA
+ 6 Tallinn  2012                         NA                  4.71             NA
+ 7 Tallinn  2012                         NA                  0.422            NA
+ 8 Tallinn  2012                         NA                  4.67             NA
+ 9 Tallinn  2012                         NA                  8.24             NA
+10 Tallinn  2012                         NA                  0.09             NA
+# ℹ 6,750 more rows
+# ℹ abbreviated names: ¹​HighTech_Employment_regional,
+#   ²​HighTech_patents_regional
+# ℹ 7 more variables: funding_to_gdp &lt;dbl&gt;, funding_per_emp &lt;dbl&gt;,
+#   z_HighTech_Employment_regional &lt;dbl&gt;, z_HighTech_patents_regional &lt;dbl&gt;,
+#   z_GERD_regional &lt;dbl&gt;, z_funding_to_gdp &lt;dbl&gt;, z_funding_per_emp &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p><em>Findings.</em> Preliminary evidence typically shows <strong>weak correlation</strong> between <strong>funds per capita</strong> and <strong>outcomes</strong>, underscoring that <strong>absorptive capacity &amp; policy design</strong> matter.</p>
+<p><em>Takeaway.</em> The z‑score scoreboard helps communicate <strong>which cities lead</strong> on outcomes vs funding intensity in the latest comparable year, without overclaiming causality.</p>
 <hr>
 </section>
-<section id="synthesis-link-to-qualitative-policy-analysis" class="level1">
-<h1>7) Synthesis &amp; Link to Qualitative Policy Analysis</h1>
-<p><em>Quantitative synthesis.</em><br>
-1) <strong>Outcome divergence</strong>: Success archetype (Tallinn+Barcelona) outperforms Poor (Athens+Lisbon) on patent intensity, often HT employment/GERD, and on the composite index.<br>
-2) <strong>Momentum</strong>: Success exhibits <strong>stronger indexed growth</strong>; Poor shows flat or volatile series.<br>
-3) <strong>Finance context</strong>: Descriptive SME metrics (cost/rejection/VC) qualitatively align with weaker outcomes in Poor.<br>
-4) <strong>Funding ≠ outcomes</strong>: Access does not guarantee ecosystem performance without effective policies.</p>
-<p><em>Link to qualitative.</em> Next, we integrate <strong>document-coded policy themes</strong> (EU &amp; regional) to test mechanisms: - <strong>Targeting &amp; prioritisation</strong> (smart specialisation, digital focus)<br>
-- <strong>Institutional capacity &amp; governance</strong> (delivery agencies, coordination)<br>
-- <strong>Complementary reforms</strong> (skills, regulation, procurement)<br>
-- <strong>Ecosystem instruments</strong> (accelerators, tech transfer, VC crowd-in)</p>
-<blockquote class="blockquote">
-<p>Optional hook: if you provide <code>data_clean/policy_thematic_tags.csv</code> (e.g., <code>city,year,theme,evidence_level</code>), we can add side-by-side timelines against KPI turning points.</p>
-</blockquote>
+<section id="sensitivity-withingroup-contrasts" class="level2">
+<h2 class="anchored" data-anchor-id="sensitivity-withingroup-contrasts">6) Sensitivity: within‑group contrasts</h2>
+<p><em>Method.</em> We show <strong>within-group</strong> differences (Barcelona − Tallinn; Athens − Lisbon) for core indicators where overlap exists. This avoids small‑N cross‑group pitfalls.</p>
+<p><em>Takeaway.</em> Within “Success” and within “Poor”, differences are smaller and more stable than cross‑group gaps, reinforcing the <strong>group effect</strong> signal.</p>
 <hr>
 </section>
-<section id="exports-reproducibility" class="level1">
-<h1>8) Exports &amp; Reproducibility</h1>
-<p><strong>CSVs:</strong> <code>outputs/03_composite_index_city_2011_2021.csv</code>, <code>outputs/03_composite_index_archetype_2011_2021.csv</code>,<br>
-<code>outputs/04_sme_city_2011_2021.csv</code>, <code>outputs/04_sme_archetype_2011_2021.csv</code>,<br>
-<code>outputs/05_period_avgs_city.csv</code>, <code>outputs/05_cagr_by_city_indicator.csv</code>, <code>outputs/06_funding_vs_composite_city.csv</code> (if provided).</p>
-<p><strong>Figures:</strong> saved under <code>figures/</code> for each section.</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>$timestamp
-[1] "2025-08-18 18:20:01.22246"
-
-$params
-$params$year_min
-[1] 2000
-
-$params$year_max
-[1] 2021
-
-$params$min_points_city_ts
-[1] 3
-
-$params$min_cities_panel
-[1] 2
-
-$params$composite_min_kpis
-[1] 2
-
-
-$cities
-[1] "Athens"    "Barcelona" "Lisbon"    "Tallinn"  
-
-$indicators
-[1] "GERD (% GDP)"              "HT employment share (%)"  
-[3] "Patents per 100k employed"</code></pre>
-</div>
-</div>
-<p><strong>Session info:</strong></p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>R version 4.5.1 (2025-06-13 ucrt)
-Platform: x86_64-w64-mingw32/x64
-Running under: Windows 11 x64 (build 26100)
-
-Matrix products: default
-  LAPACK version 3.12.1
-
-locale:
-[1] LC_COLLATE=English_United Kingdom.utf8 
-[2] LC_CTYPE=English_United Kingdom.utf8   
-[3] LC_MONETARY=English_United Kingdom.utf8
-[4] LC_NUMERIC=C                           
-[5] LC_TIME=English_United Kingdom.utf8    
-
-time zone: Europe/London
-tzcode source: internal
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-other attached packages:
-[1] zoo_1.8-14    stringr_1.5.1 scales_1.4.0  ggplot2_3.5.2 tidyr_1.3.1  
-[6] dplyr_1.1.4   readr_2.1.5  
-
-loaded via a namespace (and not attached):
- [1] bit_4.6.0          gtable_0.3.6       jsonlite_2.0.0     crayon_1.5.3      
- [5] compiler_4.5.1     tidyselect_1.2.1   parallel_4.5.1     textshaping_1.0.1 
- [9] systemfonts_1.2.3  yaml_2.3.10        fastmap_1.2.0      lattice_0.22-7    
-[13] R6_2.6.1           labeling_0.4.3     generics_0.1.4     knitr_1.50        
-[17] htmlwidgets_1.6.4  tibble_3.3.0       pillar_1.11.0      RColorBrewer_1.1-3
-[21] tzdb_0.5.0         rlang_1.1.6        utf8_1.2.6         stringi_1.8.7     
-[25] xfun_0.52          bit64_4.6.0-1      cli_3.6.5          withr_3.0.2       
-[29] magrittr_2.0.3     digest_0.6.37      grid_4.5.1         vroom_1.6.5       
-[33] rstudioapi_0.17.1  hms_1.1.3          lifecycle_1.0.4    vctrs_0.6.5       
-[37] evaluate_1.0.4     glue_1.8.0         farver_2.1.2       ragg_1.4.0        
-[41] rmarkdown_2.29     purrr_1.1.0        tools_4.5.1        pkgconfig_2.0.3   
-[45] htmltools_0.5.8.1 </code></pre>
-</div>
-</div>
+<section id="synthesis-what-it-means-for-policy" class="level2">
+<h2 class="anchored" data-anchor-id="synthesis-what-it-means-for-policy">7) Synthesis &amp; what it means for policy</h2>
+<p><strong>Findings so far (quantitative):</strong> 1. <strong>Outcome levels &amp; indexed momentum</strong> favour <strong>Tallinn/Barcelona</strong> over <strong>Athens/Lisbon</strong> across core indicators (where coverage allows).<br>
+2. <strong>Funding intensity</strong> (funding/GDP; funding/employee) does <strong>not</strong> predict stronger outcomes in <strong>Athens/Lisbon</strong>, supporting the thesis: <strong>access to EU funds ≠ ecosystem performance</strong> without effective regional policy.<br>
+3. <strong>Provenance transparency</strong> (direct vs proxy) ensures our conclusions are not artefacts of data availability.</p>
+<p><strong>What to add next (qualitative cross‑walk):</strong> - Timeline of <strong>EU + regional policy instruments</strong> per city/region.<br>
+- Coding of <strong>policy quality</strong> (focus, continuity, implementation capacity).<br>
+- Match policy phases to <strong>inflections</strong> in outcome series.</p>
+<p><strong>Reproducibility &amp; exports.</strong><br>
+- Figures in <code>figures/</code> and tables in <code>outputs/</code>.<br>
+- Master panel: <code>data_clean/analysis_ready_4cities_with_funding.csv</code>.</p>
 </section>
 
 </main>

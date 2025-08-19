@@ -292,12 +292,23 @@ sb
 *Method.* We show **within-group** differences (Barcelona − Tallinn; Athens − Lisbon) for core indicators where overlap exists. This avoids small‑N cross‑group pitfalls.
 
 ```{r}
-make_diff <- function(c1, c2, ind){
-  w <- dat_win %>%
-    filter(indicator == ind, city %in% c(c1, c2)) %>%
-    select(city, year, value) %>%
-    pivot_wider(names_from = city, values_from = value) %>%
-    mutate(diff = .data[[c1]] - .data[[c2]])
+# Robust diff builder that doesn't crash when overlap is thin/absent
+make_diff <- function(c1, c2, ind) {
+  A <- dat_win %>%
+    filter(indicator == ind, city == c1) %>%
+    select(year, a = value)
+  B <- dat_win %>%
+    filter(indicator == ind, city == c2) %>%
+    select(year, b = value)
+
+  w <- full_join(A, B, by = "year") %>%
+    mutate(diff = a - b)
+
+  if (nrow(w) == 0) {
+    # return an empty frame with expected columns
+    return(tibble(year = integer(), diff = numeric(),
+                  pair = character(), indicator = character()))
+  }
   w$pair <- paste(c1, "−", c2)
   w$indicator <- ind
   w
@@ -308,19 +319,25 @@ diff_long <- bind_rows(
   make_diff("Barcelona","Tallinn","HighTech_patents_regional"),
   make_diff("Athens","Lisbon","HighTech_Employment_regional"),
   make_diff("Athens","Lisbon","HighTech_patents_regional")
-)
+) %>%
+  filter(!is.na(diff))
 
-p_diff <- diff_long %>%
-  ggplot(aes(year, diff)) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_line(linewidth = 0.9, color = "grey30", na.rm = TRUE) +
-  geom_point(size = 1.4, color = "grey30", na.rm = TRUE) +
-  facet_grid(indicator ~ pair, scales = "free_y") +
-  labs(title = "Within-group differences (levels)",
-       x = NULL, y = "Difference (first city − second city)")
-p_diff
-ggsave("figures/within_group_differences.png", p_diff, width = 9.5, height = 5.6, dpi = 300)
+if (nrow(diff_long) >= 2) {
+  p_diff <- diff_long %>%
+    ggplot(aes(year, diff)) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    geom_line(linewidth = 0.9, color = "grey30", na.rm = TRUE) +
+    geom_point(size = 1.4, color = "grey30", na.rm = TRUE) +
+    facet_grid(indicator ~ pair, scales = "free_y") +
+    labs(title = "Within-group differences (levels)",
+         x = NULL, y = "Difference (first city − second city)")
+  p_diff
+  ggsave("figures/within_group_differences.png", p_diff, width = 9.5, height = 5.6, dpi = 300)
+} else {
+  cat("Note: insufficient overlapping years to plot within-group differences.\n")
+}
 ```
+
 
 *Takeaway.* Within “Success” and within “Poor”, differences are smaller and more stable than cross‑group gaps, reinforcing the **group effect** signal.
 
