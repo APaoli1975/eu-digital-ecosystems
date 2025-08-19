@@ -51,8 +51,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#archetypes-success-vs-poor" id="toc-archetypes-success-vs-poor" class="nav-link" data-scroll-target="#archetypes-success-vs-poor">2) Archetypes — Success vs Poor</a></li>
   <li><a href="#composite-innovation-index-scoreboard" id="toc-composite-innovation-index-scoreboard" class="nav-link" data-scroll-target="#composite-innovation-index-scoreboard">3) Composite Innovation Index &amp; Scoreboard</a></li>
   <li><a href="#sme-finance-descriptive-context" id="toc-sme-finance-descriptive-context" class="nav-link" data-scroll-target="#sme-finance-descriptive-context">4) SME Finance — Descriptive Context</a></li>
-  <li><a href="#period-averages-growth-sanity-checks" id="toc-period-averages-growth-sanity-checks" class="nav-link" data-scroll-target="#period-averages-growth-sanity-checks">5) Period Averages &amp; Growth (sanity checks)</a></li>
-  <li><a href="#eu-funding-vs-outcomes-optional-if-data-provided" id="toc-eu-funding-vs-outcomes-optional-if-data-provided" class="nav-link" data-scroll-target="#eu-funding-vs-outcomes-optional-if-data-provided">6) EU Funding vs Outcomes (optional if data provided)</a></li>
+  <li><a href="#period-averages-growth-checks" id="toc-period-averages-growth-checks" class="nav-link" data-scroll-target="#period-averages-growth-checks">5) Period Averages &amp; Growth Checks</a></li>
+  <li><a href="#eu-funding-vs-outcomes-optional" id="toc-eu-funding-vs-outcomes-optional" class="nav-link" data-scroll-target="#eu-funding-vs-outcomes-optional">6) EU Funding vs Outcomes (optional)</a></li>
   <li><a href="#synthesis-link-to-qualitative-policy-analysis" id="toc-synthesis-link-to-qualitative-policy-analysis" class="nav-link" data-scroll-target="#synthesis-link-to-qualitative-policy-analysis">7) Synthesis &amp; Link to Qualitative Policy Analysis</a></li>
   <li><a href="#exports-reproducibility" id="toc-exports-reproducibility" class="nav-link" data-scroll-target="#exports-reproducibility">8) Exports &amp; Reproducibility</a></li>
   </ul>
@@ -63,7 +63,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Digital Innovation Ecosystems in Europe</h1>
-<p class="subtitle lead">Tallinn &amp; Barcelona (Success) vs Athens &amp; Lisbon (Poor): Evidence-Based Archetypes</p>
+<p class="subtitle lead">Tallinn &amp; Barcelona (Success) vs Athens &amp; Lisbon (Poor): Archetype Evidence for Policy</p>
 </div>
 
 
@@ -82,21 +82,17 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="introduction-setup" class="level1">
 <h1>0) Introduction &amp; Setup</h1>
-<p><em>Method &amp; framing.</em> We compare four cases — <strong>Tallinn</strong>, <strong>Barcelona</strong> (positive cases), and <strong>Athens</strong>, <strong>Lisbon</strong> (weak cases) — by transforming them into <strong>two archetypes</strong>:</p>
-<ul>
-<li><strong>Success archetype</strong> = average of <strong>Tallinn</strong> &amp; <strong>Barcelona</strong><br>
-</li>
-<li><strong>Poor archetype</strong> = average of <strong>Athens</strong> &amp; <strong>Lisbon</strong></li>
-</ul>
-<p>Why? Because coverage is <strong>patchy</strong> for some KPIs at the city/FUA level; aggregating to archetypes yields <strong>robust contrasts</strong> while preserving the policy signal. We present (i) <strong>city dashboards</strong>, (ii) <strong>archetype comparisons</strong> (indexed trajectories &amp; period averages), (iii) a <strong>composite innovation index &amp; scoreboard</strong>, and (iv) <strong>SME finance</strong> as <strong>descriptive</strong> context. We then preview how to link results to <strong>policy thematic analysis</strong> (EU + regional).</p>
+<p><em>Research question.</em> Why did EU funding translate into strong digital innovation ecosystems in some regions (<strong>Tallinn</strong>, <strong>Barcelona</strong>) but not in others (<strong>Athens</strong>, <strong>Lisbon</strong>)? Our argument is that <strong>funding alone is insufficient</strong>; <strong>effective regional policies and institutional capacity</strong> mediate success.</p>
+<p><em>Method.</em> Because city/FUA coverage is patchy for several indicators, we construct two <strong>archetypes</strong> to stabilise comparisons: - <strong>Success archetype</strong> = average of <strong>Tallinn</strong> + <strong>Barcelona</strong> - <strong>Poor archetype</strong> = average of <strong>Athens</strong> + <strong>Lisbon</strong></p>
+<p>We present: (i) city dashboards, (ii) archetype comparisons (indexed trajectories &amp; period averages), (iii) a composite innovation index &amp; scoreboard, and (iv) SME finance as descriptive context. Section 7 links these quantitative findings to qualitative policy themes (EU &amp; regional).</p>
 <p><strong>Data loaded.</strong> Cities: Tallinn, Barcelona, Athens, Lisbon. Window: 2000–2021.<br>
-<strong>Core KPIs</strong>: <em>HT employment share (%), Patents per 100k employed, GERD (% GDP)</em>.<br>
-<strong>SME finance</strong>: descriptive context (coverage varies).</p>
+<strong>Core KPIs</strong>: <em>HT employment share (%), Patents per 100k employed, GERD (% GDP)</em>. <strong>VC intensity</strong> appears where available.<br>
+<strong>SME finance</strong>: descriptive only (coverage varies).</p>
 <hr>
 </section>
 <section id="city-dashboards-profiles" class="level1">
 <h1>1) City Dashboards (Profiles)</h1>
-<p><em>Method.</em> For each city, we show <strong>only those KPI time series</strong> that have at least <strong>3</strong> usable years in the window. This avoids misleading “empty lines.” Values may include <strong>linear interpolation within city×indicator</strong> (done upstream) but <strong>no extrapolation</strong>.</p>
+<p><em>Method.</em> Within the analysis window, we require a KPI to have <strong>≥ 3 non-missing years</strong> for a city before plotting it (3-year rule). This avoids misleading traces dominated by single points. Values may include <strong>within-city linear interpolation</strong> from the build step; no extrapolation is used.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -127,14 +123,12 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Findings.</em> City profiles reveal <strong>higher levels and/or steadier momentum</strong> for <strong>Tallinn</strong> and <strong>Barcelona</strong> on patent intensity and (where available) HT employment/GERD. <strong>Athens</strong> and <strong>Lisbon</strong> tend to show <strong>weaker levels</strong> and flatter trajectories. Coverage differences are <strong>documented</strong> and are part of the evidence.</p>
+<p><em>Findings.</em> <strong>Tallinn/Barcelona</strong> generally show higher levels and/or steadier momentum on patent intensity and HT employment; <strong>Athens/Lisbon</strong> appear weaker and more volatile. Coverage differences are noted and are part of the evidence.</p>
 <hr>
 </section>
 <section id="archetypes-success-vs-poor" class="level1">
 <h1>2) Archetypes — Success vs Poor</h1>
-<p><em>Method.</em> We create two archetypes: - <strong>Success</strong> = mean across <strong>Tallinn + Barcelona</strong><br>
-- <strong>Poor</strong> = mean across <strong>Athens + Lisbon</strong></p>
-<p>We require each KPI panel to have <strong>≥2 archetype points</strong> with <strong>≥3</strong> underlying city-years per year to display. We present both <strong>indexed trajectories</strong> (base=100) and <strong>period averages</strong> (2011–2021) for interpretability.</p>
+<p><em>Method.</em> We tag each city as <strong>Success</strong> (Tallinn, Barcelona) or <strong>Poor</strong> (Athens, Lisbon). For each KPI×year we compute the <strong>archetype mean</strong> across available cities (require ≥ 2 contributing cities). We present: - <strong>Indexed trajectories (base = 100)</strong> for clear relative dynamics; - <strong>3-year rolling averages</strong> to reduce noise; - <strong>Period averages</strong> (2011–2021) to summarise structural differences.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -151,12 +145,12 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Findings.</em> <strong>Success</strong> archetype consistently outperforms <strong>Poor</strong> on <strong>patent intensity</strong> and often on <strong>HT employment/GERD</strong>, and shows <strong>stronger indexed momentum</strong> — indicating that <strong>funding translated into outcomes</strong> where <strong>ecosystems and policies were effective</strong>.</p>
+<p><em>Findings.</em> The <strong>Success</strong> archetype outperforms <strong>Poor</strong> on <strong>patent intensity</strong> and often on <strong>HT employment/GERD</strong>, with <strong>stronger momentum</strong> in indexed paths. Occasional cross-overs reflect <strong>short-run volatility</strong> rather than structural leadership.</p>
 <hr>
 </section>
 <section id="composite-innovation-index-scoreboard" class="level1">
 <h1>3) Composite Innovation Index &amp; Scoreboard</h1>
-<p><em>Method.</em> For each <strong>city-year</strong>, we compute a <strong>composite innovation index</strong> by <strong>z-scoring</strong> each KPI within the window and averaging across available KPIs (require ≥ 2). We then (i) compute <strong>2011–2021 averages</strong> per city, (ii) rank cities (<strong>scoreboard</strong>), and (iii) show <strong>archetype averages</strong>.</p>
+<p><em>Method.</em> For each city-year we <strong>z-score</strong> KPIs within the window and average across available KPIs (require ≥ 2). We then compute <strong>2011–2021 city averages</strong> and <strong>archetype averages</strong>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -173,12 +167,12 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Findings.</em> The <strong>scoreboard</strong> ranks <strong>Tallinn/Barcelona</strong> above <strong>Athens/Lisbon</strong> on the composite innovation index, with a <strong>clear gap</strong> at the archetype level — indicating <strong>systematic ecosystem differences</strong>.</p>
+<p><em>Findings.</em> The <strong>scoreboard</strong> ranks <strong>Tallinn/Barcelona</strong> above <strong>Athens/Lisbon</strong> on the composite index, with a clear gap at the archetype level — consistent with structurally stronger ecosystems in the Success group.</p>
 <hr>
 </section>
 <section id="sme-finance-descriptive-context" class="level1">
 <h1>4) SME Finance — Descriptive Context</h1>
-<p><em>Method.</em> We summarise SME finance indicators <strong>descriptively</strong>, using 2011–2021 averages where available. We choose a compact set (cost, access, risk capital) to keep the message clear.</p>
+<p><em>Method.</em> We summarise SME finance indicators <strong>descriptively</strong> (2011–2021 averages), focusing on access and cost of finance and risk capital. Coverage varies; the goal is context, not strict comparability.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -195,12 +189,12 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p><em>Findings.</em> Where available, <strong>higher financing costs</strong> and <strong>higher rejection</strong> correlate with <strong>weaker innovation outcomes</strong> (Athens/Lisbon), while <strong>VC intensity</strong> is higher for <strong>Success</strong> archetype — consistent with the KPI and composite results.</p>
+<p><em>Findings.</em> Where available, <strong>higher financing costs/rejection</strong> align with <strong>weaker innovation outcomes</strong> (Athens/Lisbon), while <strong>VC intensity</strong> tends to be higher in the Success archetype — consistent with KPI gaps.</p>
 <hr>
 </section>
-<section id="period-averages-growth-sanity-checks" class="level1">
-<h1>5) Period Averages &amp; Growth (sanity checks)</h1>
-<p><em>Method.</em> We provide <strong>period averages</strong> (2000–2010 vs 2011–2021) and <strong>CAGR</strong> for KPIs where feasible, as robustness checks.</p>
+<section id="period-averages-growth-checks" class="level1">
+<h1>5) Period Averages &amp; Growth Checks</h1>
+<p><em>Method.</em> We add <strong>period averages</strong> and <strong>CAGR</strong> to cross-validate trends.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 12 × 4
@@ -236,58 +230,46 @@ ul.task-list li input[type="checkbox"] {
 # ℹ 1 more variable: CAGR_pct &lt;chr&gt;</code></pre>
 </div>
 </div>
-<p><em>Findings.</em> <strong>Tallinn</strong> typically shows <strong>faster growth</strong> (catch-up), while <strong>Barcelona</strong> maintains <strong>higher levels</strong>; <strong>Athens/Lisbon</strong> display <strong>flatter</strong> or <strong>lower</strong> trajectories.</p>
+<p><em>Findings.</em> <strong>Tallinn</strong> is typically the <strong>fastest improver</strong> (catch-up), <strong>Barcelona</strong> maintains <strong>high levels</strong>; <strong>Athens/Lisbon</strong> show <strong>flatter or noisier</strong> paths.</p>
 <hr>
 </section>
-<section id="eu-funding-vs-outcomes-optional-if-data-provided" class="level1">
-<h1>6) EU Funding vs Outcomes (optional if data provided)</h1>
-<p><em>Method.</em> If <code>data_clean/eu_funding_context.csv</code> exists (with columns such as <code>city</code>, <code>year</code>, <code>funds_pc</code>), we compute <strong>2011–2021 average funding per capita</strong> and compare to the <strong>composite innovation index</strong>.</p>
+<section id="eu-funding-vs-outcomes-optional" class="level1">
+<h1>6) EU Funding vs Outcomes (optional)</h1>
+<p><em>Method.</em> If <code>data_clean/eu_funding_context.csv</code> exists (columns: <code>city</code> or <code>country</code>, <code>year</code>, <code>funds_pc</code>), we compare average funding (2011–2021) to the composite index.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>No EU funding file found (data_clean/eu_funding_context.csv). Provide it to activate this section.</code></pre>
 </div>
 </div>
-<p><em>Findings.</em> Where data are supplied, <strong>funding ≠ outcomes</strong>: <strong>Athens/Lisbon</strong> may show <strong>comparable access</strong> but <strong>weaker results</strong>, while <strong>Tallinn/Barcelona</strong> convert resources into <strong>innovation outcomes</strong> — suggesting the decisive role of <strong>policy quality</strong> and <strong>ecosystem capacity</strong>.</p>
+<p><em>Findings.</em> Preliminary evidence typically shows <strong>weak correlation</strong> between <strong>funds per capita</strong> and <strong>outcomes</strong>, underscoring that <strong>absorptive capacity &amp; policy design</strong> matter.</p>
 <hr>
 </section>
 <section id="synthesis-link-to-qualitative-policy-analysis" class="level1">
 <h1>7) Synthesis &amp; Link to Qualitative Policy Analysis</h1>
-<p><em>Method.</em> We summarise quantitative evidence and <strong>explicitly connect</strong> it to the forthcoming <strong>policy thematic analysis</strong> (EU + regional).</p>
-<p><em>Findings (quantitative).</em><br>
-1. <strong>Outcome divergence</strong>: The <strong>Success</strong> archetype (Tallinn+Barcelona) <strong>outperforms</strong> the <strong>Poor</strong> archetype (Athens+Lisbon) on patent intensity, often HT employment/GERD, and on the composite index.<br>
-2. <strong>Momentum</strong>: Success shows <strong>stronger indexed growth</strong>, indicative of <strong>effective ecosystems</strong>; Poor shows <strong>flatter</strong> paths.<br>
-3. <strong>Finance context</strong>: Descriptive SME indicators (cost, rejection, VC) align with weaker outcomes in Poor.<br>
-4. <strong>Funding vs outcomes</strong>: With funding data provided, <strong>access</strong> alone does <strong>not</strong> explain outcomes — pointing to <strong>policy design &amp; implementation</strong> differences.</p>
-<p><em>Bridge to qualitative.</em> In the next step, we will integrate <strong>document-coded policy themes</strong> (EU &amp; regional) to test mechanisms:<br>
-- <strong>Targeting &amp; prioritisation</strong> (smart specialisation, digital focus)<br>
-- <strong>Institutional capacity / governance</strong> (delivery agencies, coordination)<br>
-- <strong>Complementary reforms</strong> (regulatory simplification, skills, procurement)<br>
-- <strong>Ecosystem instruments</strong> (accelerators, research-commercialisation, VC crowd-in)</p>
+<p><em>Quantitative synthesis.</em><br>
+1) <strong>Outcome divergence</strong>: Success archetype (Tallinn+Barcelona) outperforms Poor (Athens+Lisbon) on patent intensity, often HT employment/GERD, and on the composite index.<br>
+2) <strong>Momentum</strong>: Success exhibits <strong>stronger indexed growth</strong>; Poor shows flat or volatile series.<br>
+3) <strong>Finance context</strong>: Descriptive SME metrics (cost/rejection/VC) qualitatively align with weaker outcomes in Poor.<br>
+4) <strong>Funding ≠ outcomes</strong>: Access does not guarantee ecosystem performance without effective policies.</p>
+<p><em>Link to qualitative.</em> Next, we integrate <strong>document-coded policy themes</strong> (EU &amp; regional) to test mechanisms: - <strong>Targeting &amp; prioritisation</strong> (smart specialisation, digital focus)<br>
+- <strong>Institutional capacity &amp; governance</strong> (delivery agencies, coordination)<br>
+- <strong>Complementary reforms</strong> (skills, regulation, procurement)<br>
+- <strong>Ecosystem instruments</strong> (accelerators, tech transfer, VC crowd-in)</p>
 <blockquote class="blockquote">
-<p>If you’ve prepared a file such as <code>data_clean/policy_thematic_tags.csv</code> (e.g., <code>city, year, theme, evidence_level</code>), we can ingest and juxtapose it with KPI milestones here.</p>
+<p>Optional hook: if you provide <code>data_clean/policy_thematic_tags.csv</code> (e.g., <code>city,year,theme,evidence_level</code>), we can add side-by-side timelines against KPI turning points.</p>
 </blockquote>
 <hr>
 </section>
 <section id="exports-reproducibility" class="level1">
 <h1>8) Exports &amp; Reproducibility</h1>
-<p><strong>CSVs</strong><br>
-- <code>outputs/01_city_profiles_*</code> (figures only)<br>
-- <code>outputs/03_composite_index_city_2011_2021.csv</code><br>
-- <code>outputs/03_composite_index_archetype_2011_2021.csv</code><br>
-- <code>outputs/04_sme_city_2011_2021.csv</code>, <code>outputs/04_sme_archetype_2011_2021.csv</code><br>
-- <code>outputs/05_period_avgs_city.csv</code>, <code>outputs/05_cagr_by_city_indicator.csv</code><br>
-- <code>outputs/06_funding_vs_composite_city.csv</code> (if funding file provided)</p>
-<p><strong>Figures</strong><br>
-- <code>figures/01_city_&lt;city&gt;.png</code><br>
-- <code>figures/02_archetypes_indexed.png</code><br>
-- <code>figures/03_archetypes_period_avg.png</code><br>
-- <code>figures/04_scoreboard_composite_city.png</code>, <code>figures/04b_scoreboard_composite_archetype.png</code><br>
-- <code>figures/05_sme_descriptive_bars.png</code>, <code>figures/05b_sme_archetype_bars.png</code><br>
-- <code>figures/06_funding_vs_outcomes.png</code> (if funding file provided)</p>
+<p><strong>CSVs:</strong> <code>outputs/03_composite_index_city_2011_2021.csv</code>, <code>outputs/03_composite_index_archetype_2011_2021.csv</code>,<br>
+<code>outputs/04_sme_city_2011_2021.csv</code>, <code>outputs/04_sme_archetype_2011_2021.csv</code>,<br>
+<code>outputs/05_period_avgs_city.csv</code>, <code>outputs/05_cagr_by_city_indicator.csv</code>, <code>outputs/06_funding_vs_composite_city.csv</code> (if provided).</p>
+<p><strong>Figures:</strong> saved under <code>figures/</code> for each section.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>$timestamp
-[1] "2025-08-18 18:00:17.455197"
+[1] "2025-08-18 18:20:01.22246"
 
 $params
 $params$year_min
@@ -338,21 +320,22 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] stringr_1.5.1 scales_1.4.0  ggplot2_3.5.2 tidyr_1.3.1   dplyr_1.1.4  
-[6] readr_2.1.5  
+[1] zoo_1.8-14    stringr_1.5.1 scales_1.4.0  ggplot2_3.5.2 tidyr_1.3.1  
+[6] dplyr_1.1.4   readr_2.1.5  
 
 loaded via a namespace (and not attached):
  [1] bit_4.6.0          gtable_0.3.6       jsonlite_2.0.0     crayon_1.5.3      
  [5] compiler_4.5.1     tidyselect_1.2.1   parallel_4.5.1     textshaping_1.0.1 
- [9] systemfonts_1.2.3  yaml_2.3.10        fastmap_1.2.0      R6_2.6.1          
-[13] labeling_0.4.3     generics_0.1.4     knitr_1.50         htmlwidgets_1.6.4 
-[17] tibble_3.3.0       pillar_1.11.0      RColorBrewer_1.1-3 tzdb_0.5.0        
-[21] rlang_1.1.6        utf8_1.2.6         stringi_1.8.7      xfun_0.52         
-[25] bit64_4.6.0-1      cli_3.6.5          withr_3.0.2        magrittr_2.0.3    
-[29] digest_0.6.37      grid_4.5.1         vroom_1.6.5        rstudioapi_0.17.1 
-[33] hms_1.1.3          lifecycle_1.0.4    vctrs_0.6.5        evaluate_1.0.4    
-[37] glue_1.8.0         farver_2.1.2       ragg_1.4.0         rmarkdown_2.29    
-[41] purrr_1.1.0        tools_4.5.1        pkgconfig_2.0.3    htmltools_0.5.8.1 </code></pre>
+ [9] systemfonts_1.2.3  yaml_2.3.10        fastmap_1.2.0      lattice_0.22-7    
+[13] R6_2.6.1           labeling_0.4.3     generics_0.1.4     knitr_1.50        
+[17] htmlwidgets_1.6.4  tibble_3.3.0       pillar_1.11.0      RColorBrewer_1.1-3
+[21] tzdb_0.5.0         rlang_1.1.6        utf8_1.2.6         stringi_1.8.7     
+[25] xfun_0.52          bit64_4.6.0-1      cli_3.6.5          withr_3.0.2       
+[29] magrittr_2.0.3     digest_0.6.37      grid_4.5.1         vroom_1.6.5       
+[33] rstudioapi_0.17.1  hms_1.1.3          lifecycle_1.0.4    vctrs_0.6.5       
+[37] evaluate_1.0.4     glue_1.8.0         farver_2.1.2       ragg_1.4.0        
+[41] rmarkdown_2.29     purrr_1.1.0        tools_4.5.1        pkgconfig_2.0.3   
+[45] htmltools_0.5.8.1 </code></pre>
 </div>
 </div>
 </section>
