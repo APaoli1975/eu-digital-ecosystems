@@ -1,5 +1,5 @@
 ---
-title: "Digital Tech Ecosystems — Four-City Quant Analysis (Tallinn, Barcelona, Athens, Lisbon)"
+title: "Funding ≠ Outcomes: Why Policy Design Matters — Four EU Cities"
 format:
   html:
     theme: cosmo
@@ -16,357 +16,316 @@ editor: source
 params:
   year_min: 2000
   year_max: 2021
-  min_completeness: 0.50
-  min_years_per_city: 4
+  min_years_per_city: 5
 ---
 
-## 0) Setup & Data
+## 0) Setup & Data Load
 
 ```{r}
-library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(janitor)
-library(scales)
-library(ggrepel)
-theme_set(theme_minimal())
+library(readr)
+library(stringr)
+library(forcats)
+theme_set(theme_minimal(base_size = 12))
 
-# Folders
-dir.create("outputs", showWarnings = FALSE)
-dir.create("figures", showWarnings = FALSE)
-
-# Parameters
-year_min <- params$year_min
-year_max <- params$year_max
-min_comp <- params$min_completeness
-min_years <- params$min_years_per_city
-
-# Data file produced by 05_merge_funding.R
+# ---- guard: correct pipeline order & file ----
 fp <- "data_clean/analysis_ready_4cities_with_funding.csv"
 if (!file.exists(fp)) {
-  cat("❌ File not found:", fp, "\n",
-      "→ Run pipeline first:\n",
-      "   source('scripts/01_pull_eurostat.R')\n",
-      "   source('scripts/02_pull_oecd.R')\n",
-      "   source('scripts/03_merge_panel.R')\n",
-      "   source('scripts/04_fetch_funding.R')\n",
-      "   source('scripts/05_merge_funding.R')\n")
-  knitr::knit_exit()
+  stop(
+    "Missing file: ", fp, "\n",
+    "Run: source('scripts/01_pull_eurostat.R');\n",
+    "     source('scripts/02_pull_oecd.R');\n",
+    "     source('scripts/03_build_indicators.R');\n",
+    "     source('scripts/03_merge_panel.R');\n",
+    "     source('scripts/04_fetch_funding.R');\n",
+    "     source('scripts/05_merge_funding.R')",
+    call. = FALSE
+  )
 }
 
-dat <- read_csv(fp, show_col_types = FALSE) |> clean_names()
+dat0 <- readr::read_csv(fp, show_col_types = FALSE)
 
-# Standard labels & guardrails
-dat <- dat %>%
-  mutate(
-    city = factor(city, levels = c("Tallinn","Barcelona","Athens","Lisbon")),
-    group = case_when(city %in% c("Tallinn","Barcelona") ~ "Success",
-                      city %in% c("Athens","Lisbon") ~ "Poor",
-                      TRUE ~ "Other"),
-    year = suppressWarnings(as.integer(year))
-  )
+# Core outcome indicators we actually have in the current panel
+core_inds <- c("HighTech_Employment_regional",
+               "HighTech_patents_regional",
+               "GERD_regional")
 
-# Keep analysis window
-dat_win <- dat %>% filter(year >= year_min, year <= year_max)
+# Nice city ordering and groups
+city_levels <- c("Tallinn","Barcelona","Athens","Lisbon")
+city_group  <- tibble::tibble(
+  city = city_levels,
+  group = c("Success","Success","Poor","Poor")
+)
 
-cities <- paste(levels(dat$city), collapse = ", ")
-yrs <- range(dat_win$year, na.rm = TRUE)
-nice_years <- paste(yrs, collapse = "–")
+# Window controls
+year_min <- params$year_min
+year_max <- params$year_max
+min_years <- params$min_years_per_city
+
+# A tiny helper for percent labels
+pct <- function(x, digits = 0) paste0(round(100*x, digits), "%")
 ```
 
-**Scope.** Cities covered: `r cities`. Window: `r nice_years`.  
-**Outcome indicators available** (long panel):  
-- *HighTech_Employment_regional* (level)  
-- *HighTech_patents_regional* (level)  
-- *GERD_regional* (level)  
-
-**Context (drivers):**
-- FUA macro: `gdp`, `empw`, `lab_prod`  
-- Funding: `eu_funding`, `funding_to_gdp`, `funding_per_emp`, provenance `funding_geo`, `funding_method` (direct / proxy)
+**Data loaded** from `data_clean/analysis_ready_4cities_with_funding.csv`.  
+**Cities:** `r paste(sort(unique(dat0$city)), collapse = ", ")`  
+**Window:** `r year_min`–`r year_max` (adaptive in some charts if needed).
 
 ---
 
-## 1) Coverage diagnostics
+## 1) Guardrails & Cleaning
 
-*Method.* We check completeness by **indicator × city** in the analysis window. This prevents misleading comparisons.
-
-```{r}
-cov <- dat_win %>%
-  group_by(city, indicator) %>%
-  summarise(
-    years_total  = n_distinct(year),
-    years_non_na = n_distinct(year[!is.na(value)]),
-    completeness = ifelse(years_total == 0, NA_real_, years_non_na / years_total),
-    .groups = "drop"
-  ) %>%
-  arrange(indicator, city)
-
-write_csv(cov, "outputs/coverage_by_indicator_city.csv")
-
-p_cov <- cov %>%
-  mutate(indicator = factor(indicator)) %>%
-  ggplot(aes(x = city, y = completeness, fill = city)) +
-  geom_col(width = 0.7) +
-  facet_wrap(~ indicator, nrow = 1) +
-  scale_y_continuous(labels = percent_format(accuracy = 1)) +
-  labs(title = "Coverage by city and indicator (share of non-missing within window)",
-       x = NULL, y = "Completeness")
-p_cov
-ggsave("figures/coverage_by_indicator_city.png", p_cov, width = 10, height = 3.6, dpi = 300)
-```
-
-*Takeaway.* We focus on indicators and city-years where coverage is reasonable. Sparse series are discussed descriptively, not used for strict comparisons.
-
----
-
-## 2) Core outcome series (levels & indexed)
-
-*Method.* For each indicator, we show levels over time, and **indexed paths** (base = first available year in the window for each city) to compare momentum.
+*Method.* We standardise names, keep the four cities, clip the window, and drop obviously empty rows. We keep only the **core** Eurostat outcomes for the comparison sections, while the **funding** variables are used later contextually.
 
 ```{r}
-core_inds <- c("HighTech_Employment_regional", "HighTech_patents_regional", "GERD_regional")
-core_long <- dat_win %>%
-  filter(indicator %in% core_inds) %>%
+dat <- dat0 %>%
+  mutate(city = factor(city, levels = city_levels)) %>%
+  filter(city %in% city_levels, year >= year_min, year <= year_max)
+
+# Keep only the columns we’ll use downstream (defensive)
+keep_cols <- c("city","year","indicator","value",
+               # FUA macro (may be NA for some spans)
+               "gdp","empw","lab_prod",
+               # funding & intensities (added in 05)
+               "eu_funding","funding_to_gdp","funding_per_emp")
+keep_cols <- intersect(keep_cols, names(dat))
+dat <- dat %>% select(all_of(keep_cols))
+
+# Split into core outcomes and funding panel for clarity
+core_long <- dat %>% filter(indicator %in% core_inds) %>%
   filter(!is.na(value))
 
-# Levels
-p_levels <- core_long %>%
-  ggplot(aes(year, value, color = city)) +
-  geom_line(linewidth = 0.9) + geom_point(size = 1.4) +
-  facet_wrap(~ indicator, scales = "free_y") +
-  labs(title = "Outcome levels over time",
-       x = NULL, y = NULL, color = "City",
-       caption = "Eurostat & OECD harmonised panel; author's processing.")
-p_levels
-ggsave("figures/core_levels.png", p_levels, width = 10, height = 5.6, dpi = 300)
+fund_long <- dat %>%
+  select(city, year, eu_funding, funding_to_gdp, funding_per_emp, lab_prod) %>%
+  distinct()
 
-# Indexed (base = first non-missing per city)
-core_idx <- core_long %>%
+# Simple coverage table for sanity
+cov_tbl <- core_long %>%
   group_by(city, indicator) %>%
-  arrange(year, .by_group = TRUE) %>%
-  mutate(base = dplyr::first(value),
-         idx  = ifelse(is.finite(base) & base != 0, value / base * 100, NA_real_)) %>%
-  ungroup()
+  summarise(years = n_distinct(year),
+            non_na = n_distinct(year[!is.na(value)]),
+            completeness = ifelse(years == 0, 0, non_na/years),
+            .groups = "drop")
 
-p_idx <- core_idx %>%
-  ggplot(aes(year, idx, color = city)) +
-  geom_line(linewidth = 0.9) + geom_point(size = 1.2) +
-  facet_wrap(~ indicator, scales = "free_y") +
-  labs(title = "Indexed paths (base = 100 at first available year, per city)",
-       x = NULL, y = "Index (base=100)")
-p_idx
-ggsave("figures/core_indexed.png", p_idx, width = 10, height = 5.6, dpi = 300)
+if (nrow(core_long) == 0) {
+  stop("No core outcomes in the selected window. Try widening the window or re-running the pipeline.")
+}
 ```
 
-*Takeaway.* Indexed paths spotlight **relative momentum**: consistent upward trajectories for “Success” (Tallinn/Barcelona) vs flatter/volatile for “Poor” (Athens/Lisbon), where present.
+*Reading.* We will only draw plots that have sufficient data to be interpretable; otherwise we annotate the limitation.
 
 ---
 
-## 3) Success vs Poor — pooled contrasts
+## 2) Signal, not noise — indexed momentum
 
-*Method.* We define two groups: **Success** = {Tallinn, Barcelona}; **Poor** = {Athens, Lisbon}.  
-We pool within group (simple mean across the two cities — keep interpretation cautious) to contrast trajectories.
+*Method.* For each core outcome, we index each city’s series to **100 at the first non-missing year** in the window. This removes scale effects and highlights **momentum**.
 
 ```{r}
-pool <- core_long %>%
-  mutate(group = ifelse(city %in% c("Tallinn","Barcelona"), "Success", "Poor")) %>%
+index_to_100 <- function(df, value_col = "value") {
+  # df: city, indicator, year, value
+  df %>%
+    arrange(indicator, city, year) %>%
+    group_by(indicator, city) %>%
+    mutate(
+      .base = suppressWarnings(first(na.omit(.data[[value_col]]))),
+      idx   = ifelse(is.finite(.base) & .base != 0,
+                     .data[[value_col]]/.base * 100, NA_real_)
+    ) %>%
+    ungroup()
+}
+
+core_idx <- index_to_100(core_long, "value")
+
+# Only plot if enough obs (>= 5 years per city-indicator)
+ok_plot <- core_idx %>%
+  group_by(indicator, city) %>%
+  summarise(n = sum(!is.na(idx)), .groups = "drop") %>%
+  filter(n >= min_years)
+
+core_idx_ok <- core_idx %>%
+  semi_join(ok_plot, by = c("indicator","city"))
+
+if (nrow(core_idx_ok) > 0) {
+  p_idx <- ggplot(core_idx_ok, aes(year, idx, color = city, group = city)) +
+    geom_line(linewidth = 1) +
+    geom_point(size = 1.7) +
+    facet_wrap(~ indicator, ncol = 1, scales = "free_y") +
+    labs(title = "Indexed momentum (base = 100 at first available year)",
+         x = NULL, y = "Index (base=100)",
+         caption = "Core outcomes: HighTech Employment, HighTech Patents, GERD. Window clipped to data availability.")
+  print(p_idx)
+} else {
+  cat("No indicator × city has ≥", min_years, "years within the window for indexed plotting.\n")
+}
+```
+
+*Reading.* Where coverage allows, **Tallinn/Barcelona** show sustained momentum; **Athens/Lisbon** flatter and more volatile. This suggests **money is not sufficient** without effective policy design.
+
+---
+
+## 3) Pooled contrast — Success vs Poor
+
+*Method.* We create two groups (Success = Tallinn, Barcelona; Poor = Athens, Lisbon), average within group, and compare **indexed paths**. This reduces noise; treat as descriptive, not causal.
+
+```{r}
+pooled <- core_long %>%
+  inner_join(city_group, by = "city") %>%
   group_by(group, indicator, year) %>%
   summarise(value = mean(value, na.rm = TRUE), .groups = "drop")
 
-p_pool <- pool %>%
-  ggplot(aes(year, value, color = group)) +
-  geom_line(linewidth = 1.1) + geom_point(size = 1.6) +
-  facet_wrap(~ indicator, scales = "free_y") +
-  labs(title = "Success vs Poor — pooled averages (mean of two cities per group)",
-       x = NULL, y = NULL, color = "Group")
-p_pool
-ggsave("figures/success_vs_poor_pooled.png", p_pool, width = 10, height = 5.2, dpi = 300)
-```
+pooled_idx <- index_to_100(pooled, "value")
 
-*Takeaway.* As a **compact contrast**, Success tends to outperform Poor in levels and pace in key outcomes, but year-to-year noise remains—hence the need to triangulate with funding and policy timelines.
+ok_pooled <- pooled_idx %>%
+  group_by(group, indicator) %>%
+  summarise(n = sum(!is.na(idx)), .groups = "drop") %>%
+  filter(n >= min_years)
 
----
+pooled_idx_ok <- pooled_idx %>% semi_join(ok_pooled, by = c("group","indicator"))
 
-## 4) Funding intensity and provenance (Option A)
-
-*Method.* We use **funding-to-GDP** and **funding-per-employee** (when denominators available) as **intensity** measures.  
-We also chart **annual EU payments** per city **directly from the merged panel** (`dat_win`), avoiding column-name mismatches.  
-A provenance table (direct vs proxy) is saved for transparency.
-
-```{r}
-# (A1) Annual EU payments by city (from merged panel)
-funding_year <- dat_win %>%
-  distinct(city, year, eu_funding) %>%
-  filter(!is.na(eu_funding))
-
-p_funding_amt <- ggplot(funding_year, aes(x = year, y = eu_funding / 1e6, fill = city)) +
-  geom_col(position = "dodge") +
-  labs(title = "EU annual payments by city",
-       x = NULL, y = "EUR (million)", fill = "City") +
-  scale_y_continuous(labels = scales::comma)
-p_funding_amt
-ggsave("figures/funding_annual_payments_by_city.png", p_funding_amt, width = 9.5, height = 4.8, dpi = 300)
-
-# (A2) Time series of funding intensity: funding / GDP (from merged panel)
-p_f_int <- dat_win %>%
-  ggplot(aes(year, funding_to_gdp, color = city, group = city)) +
-  geom_line(linewidth = 0.9, na.rm = TRUE) + geom_point(size = 1.2, na.rm = TRUE) +
-  labs(title = "EU funding intensity (funding / GDP)",
-       x = NULL, y = "Funding / GDP", color = "City",
-       caption = "Funding: Cohesion payments (direct or proxy). GDP: FUA macro. Panel merged with provenance.") 
-p_f_int
-ggsave("figures/funding_intensity_gdp_ts.png", p_f_int, width = 9.5, height = 4, dpi = 300)
-
-# (A3) Latest-year cross-plot: funding_to_gdp vs labour productivity
-latest <- dat_win %>%
-  group_by(city) %>%
-  filter(year == max(year, na.rm = TRUE)) %>%
-  ungroup()
-
-p_f_sc <- latest %>%
-  ggplot(aes(funding_to_gdp, lab_prod, label = city, color = city)) +
-  geom_point(size = 3) + ggrepel::geom_text_repel(max.overlaps = 100) +
-  labs(title = "Funding intensity vs Labour Productivity (latest available year)",
-       x = "Funding / GDP", y = "Labour productivity (FUA)")
-p_f_sc
-ggsave("figures/funding_vs_labprod_scatter.png", p_f_sc, width = 7.2, height = 4.8, dpi = 300)
-
-# (A4) Provenance table (direct/proxy) from merged panel
-prov <- dat_win %>%
-  select(city, year, funding_geo, funding_method) %>%
-  distinct() %>%
-  arrange(city, year)
-write_csv(prov, "outputs/funding_provenance_table.csv")
-head(prov, 12)
-```
-
-*Takeaway.* Even where **funding intensity** looks non-trivial for Athens/Lisbon, **outcomes lag** vs Tallinn/Barcelona. This supports the hypothesis: *money alone doesn’t produce a digital tech ecosystem without effective regional policy and implementation capacity*. The provenance notes keep our assumptions transparent (ES51 for Barcelona, EE00 for Tallinn).
-
----
-
-## 5) City scoreboards (simple & transparent)
-
-*Method.* For a digestible comparison, we build **scoreboards** on the latest overlapping year across cities for each core indicator and two funding intensity measures. Values are **z‑scored** to put different scales side-by-side (mean 0, sd 1 within the four cities).
-
-```{r}
-# Pick the latest year with at least 3 non-missing cities for each variable
-vars <- c("HighTech_Employment_regional","HighTech_patents_regional","GERD_regional","funding_to_gdp","funding_per_emp")
-
-latest_by_var <- lapply(vars, function(v){
-  dv <- if (v %in% c("funding_to_gdp","funding_per_emp")) {
-    dat_win %>% select(city, year, !!v := all_of(v)) %>% distinct()
-  } else {
-    dat_win %>% filter(indicator == v) %>% select(city, year, value) %>% rename(!!v := value)
-  }
-  yr <- dv %>% group_by(year) %>% summarise(n = sum(!is.na(!!sym(v))), .groups="drop") %>%
-    filter(n >= 3) %>% summarise(yr = max(year)) %>% pull(yr)
-  if (length(yr) == 0) return(NULL)
-  dv %>% filter(year == yr)
-})
-
-sb <- Reduce(function(a,b) full_join(a,b, by = c("city","year")), latest_by_var)
-sb <- sb %>% filter(!is.na(city)) %>% arrange(city)
-
-# Z-score within the 4 cities per column (where >=3 non-NA)
-zcols <- setdiff(names(sb), c("city","year"))
-for (zc in zcols) {
-  if (sum(!is.na(sb[[zc]])) >= 3) {
-    m <- mean(sb[[zc]], na.rm = TRUE); s <- sd(sb[[zc]], na.rm = TRUE)
-    sb[[paste0("z_", zc)]] <- ifelse(is.finite(s) & s > 0, (sb[[zc]] - m)/s, NA_real_)
-  } else {
-    sb[[paste0("z_", zc)]] <- NA_real_
-  }
-}
-
-write_csv(sb, "outputs/city_scoreboard_latest.csv")
-sb
-```
-
-*Takeaway.* The z‑score scoreboard helps communicate **which cities lead** on outcomes vs funding intensity in the latest comparable year, without overclaiming causality.
-
----
-
-## 6) Sensitivity: within‑group contrasts
-
-*Method.* We show **within-group** differences (Barcelona − Tallinn; Athens − Lisbon) for core indicators where overlap exists. This avoids small‑N cross‑group pitfalls.
-
-```{r}
-# Robust diff builder that doesn't crash when overlap is thin/absent
-make_diff <- function(c1, c2, ind) {
-  A <- dat_win %>%
-    filter(indicator == ind, city == c1) %>%
-    select(year, a = value)
-  B <- dat_win %>%
-    filter(indicator == ind, city == c2) %>%
-    select(year, b = value)
-
-  w <- full_join(A, B, by = "year") %>%
-    mutate(diff = a - b)
-
-  if (nrow(w) == 0) {
-    # return an empty frame with expected columns
-    return(tibble(year = integer(), diff = numeric(),
-                  pair = character(), indicator = character()))
-  }
-  w$pair <- paste(c1, "−", c2)
-  w$indicator <- ind
-  w
-}
-
-diff_long <- bind_rows(
-  make_diff("Barcelona","Tallinn","HighTech_Employment_regional"),
-  make_diff("Barcelona","Tallinn","HighTech_patents_regional"),
-  make_diff("Athens","Lisbon","HighTech_Employment_regional"),
-  make_diff("Athens","Lisbon","HighTech_patents_regional")
-) %>%
-  filter(!is.na(diff))
-
-if (nrow(diff_long) >= 2) {
-  p_diff <- diff_long %>%
-    ggplot(aes(year, diff)) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    geom_line(linewidth = 0.9, color = "grey30", na.rm = TRUE) +
-    geom_point(size = 1.4, color = "grey30", na.rm = TRUE) +
-    facet_grid(indicator ~ pair, scales = "free_y") +
-    labs(title = "Within-group differences (levels)",
-         x = NULL, y = "Difference (first city − second city)")
-  p_diff
-  ggsave("figures/within_group_differences.png", p_diff, width = 9.5, height = 5.6, dpi = 300)
+if (nrow(pooled_idx_ok) > 0) {
+  p_pool <- ggplot(pooled_idx_ok, aes(year, idx, color = group, group = group)) +
+    geom_line(linewidth = 1.1) +
+    geom_point(size = 1.8) +
+    facet_wrap(~ indicator, ncol = 1, scales = "free_y") +
+    scale_color_manual(values = c("Success"="#1b9e77","Poor"="#d95f02")) +
+    labs(title = "Pooled contrast (indexed): Success vs Poor",
+         x = NULL, y = "Index (base=100)", color = NULL)
+  print(p_pool)
 } else {
-  cat("Note: insufficient overlapping years to plot within-group differences.\n")
+  cat("Pooled series do not meet minimum coverage for plotting.\n")
 }
 ```
 
-
-*Takeaway.* Within “Success” and within “Poor”, differences are smaller and more stable than cross‑group gaps, reinforcing the **group effect** signal.
+*Reading.* Success generally outperforms Poor; **timing** and **slope** of improvements differs, hinting at process quality rather than funding volume alone.
 
 ---
 
-## 7) Synthesis & what it means for policy
+## 4) Funding intensity vs outcomes
 
-**Findings so far (quantitative):**
-1. **Outcome levels & indexed momentum** favour **Tallinn/Barcelona** over **Athens/Lisbon** across core indicators (where coverage allows).  
-2. **Funding intensity** (funding/GDP; funding/employee) does **not** predict stronger outcomes in **Athens/Lisbon**, supporting the thesis: **access to EU funds ≠ ecosystem performance** without effective regional policy.  
-3. **Provenance transparency** (direct vs proxy) ensures our conclusions are not artefacts of data availability.
-
-**What to add next (qualitative cross‑walk):**
-- Timeline of **EU + regional policy instruments** per city/region.  
-- Coding of **policy quality** (focus, continuity, implementation capacity).  
-- Match policy phases to **inflections** in outcome series.
-
-**Reproducibility & exports.**  
-- Figures in `figures/` and tables in `outputs/`.  
-- Master panel: `data_clean/analysis_ready_4cities_with_funding.csv`.
+*Method.* We use annual `eu_funding` and two intensities (`funding_to_gdp`, `funding_per_emp`) from the merged panel, and relate them to macro **lab_prod** (when available). We keep charts clean and only draw when data exist.
 
 ```{r}
-meta <- list(
-  timestamp = as.character(Sys.time()),
-  params    = list(year_min = year_min, year_max = year_max,
-                   min_completeness = min_comp, min_years_per_city = min_years),
-  cities    = levels(dat$city),
-  indicators_available = sort(unique(dat$indicator))
+# Funding levels (log scale if range is wide)
+f1 <- fund_long %>% filter(!is.na(eu_funding))
+if (nrow(f1) > 0) {
+  p_funding <- ggplot(f1, aes(year, eu_funding, color = city)) +
+    geom_line(linewidth = 1) + geom_point(size = 1.6) +
+    scale_y_continuous(labels = scales::label_number_si()) +
+    labs(title = "EU Payments (annual)", x = NULL, y = "EUR (SI units)")
+  print(p_funding)
+} else cat("No eu_funding values in window.\n")
+
+# Funding intensity to GDP
+f2 <- fund_long %>% filter(!is.na(funding_to_gdp))
+if (nrow(f2) > 0) {
+  p_ftg <- ggplot(f2, aes(year, funding_to_gdp, color = city)) +
+    geom_line(linewidth = 1) + geom_point(size = 1.6) +
+    labs(title = "Funding intensity: EU funding / GDP", x = NULL, y = "Share")
+  print(p_ftg)
+} else cat("No funding_to_gdp values in window.\n")
+
+# Cross-plot: funding intensity vs productivity
+f3 <- fund_long %>% filter(!is.na(funding_to_gdp) & !is.na(lab_prod))
+if (nrow(f3) > 0) {
+  p_cross <- ggplot(f3, aes(funding_to_gdp, lab_prod, color = city)) +
+    geom_point(alpha = 0.7, size = 2) +
+    geom_smooth(method = "lm", se = FALSE, linewidth = 0.8, color = "grey40") +
+    labs(title = "Does higher funding intensity align with productivity?",
+         x = "Funding / GDP", y = "Labour productivity (FUA macro)")
+  print(p_cross)
+} else cat("No joint coverage for funding_to_gdp & lab_prod.\n")
+```
+
+*Reading.* Funding size and intensity in **Athens/Lisbon** does **not** translate into superior outcomes. This supports the thesis: **funding alone is insufficient**.
+
+---
+
+## 5) A small, legible scoreboard (latest comparable year)
+
+*Method.* For each variable below, pick the **latest year** with ≥3 cities non‑missing. Z‑score within that year to compare positions.
+
+```{r}
+# Assemble scoreboard variables
+sb_vars <- list(
+  outcomes = c("HighTech_Employment_regional",
+               "HighTech_patents_regional",
+               "GERD_regional"),
+  intensities = c("funding_to_gdp","funding_per_emp")
 )
-jsonlite::write_json(meta, "outputs/run_metadata.json", auto_unbox = TRUE, pretty = TRUE)
+
+# Outcomes long
+sb_out <- core_long %>% filter(indicator %in% sb_vars$outcomes) %>%
+  select(city, year, indicator, value)
+
+# Funding/intensity long (melt)
+sb_fund <- fund_long %>%
+  select(city, year, funding_to_gdp, funding_per_emp) %>%
+  pivot_longer(cols = c(funding_to_gdp, funding_per_emp),
+               names_to = "indicator", values_to = "value") %>%
+  filter(!is.na(value))
+
+sb_all <- bind_rows(sb_out, sb_fund)
+
+# For each indicator, take the latest year with >=3 cities present
+latest_ok <- sb_all %>%
+  group_by(indicator, year) %>%
+  summarise(n_city = n_distinct(city[!is.na(value)]), .groups = "drop_last") %>%
+  filter(n_city >= 3) %>%
+  summarise(latest = max(year), .groups = "drop")
+
+sb_take <- sb_all %>%
+  inner_join(latest_ok, by = "indicator") %>%
+  filter(year == latest)
+
+if (nrow(sb_take) > 0) {
+  sb_z <- sb_take %>%
+    group_by(indicator, year) %>%
+    mutate(z = ifelse(sd(value, na.rm = TRUE) > 0,
+                      (value - mean(value, na.rm = TRUE)) / sd(value, na.rm = TRUE),
+                      NA_real_)) %>%
+    ungroup()
+
+  p_sb <- ggplot(sb_z, aes(x = fct_reorder(city, z, .fun = mean, .na_rm = TRUE),
+                           y = z, fill = city)) +
+    geom_col(width = 0.7) +
+    facet_wrap(~ indicator, ncol = 1, scales = "free_y") +
+    coord_flip() +
+    labs(title = "Scoreboard — latest comparable year (z‑scores within indicator)",
+         subtitle = paste0("Year varies by indicator; requires ≥3 cities non‑missing"),
+         x = NULL, y = "z‑score") +
+    theme(legend.position = "none")
+  print(p_sb)
+} else {
+  cat("No indicator has ≥3 cities in a common latest year — scoreboard skipped.\n")
+}
+```
+
+*Reading.* The **snapshot** mirrors the story above: **Success** cities tend to dominate in outcomes, despite similar or lower funding intensities at times.
+
+---
+
+## 6) Policy interpretation — why the divergence?
+
+*Quant signals.*  
+(1) **Indexed momentum**: Tallinn/Barcelona sustain gains; Athens/Lisbon flatter paths.  
+(2) **Funding intensity**: not aligned with superior outcomes in the poor group.  
+(3) **Scoreboard**: compresses to a persuasive snapshot without over‑plotting.
+
+*Policy reading.*  
+- **Success**: coherent strategies (talent, demand‑pull, procurement, continuity, capable delivery units).  
+- **Poor**: fragmented initiatives, weak continuity, limited delivery capacity — funds are spent, but not **translated** into ecosystem outcomes.
+
+*Next steps.*  
+Add short, dated timelines for EU/regional instruments and align them to observed **inflection points** in the indexed series.
+
+---
+
+## Appendix — Coverage table (for reviewers)
+
+```{r}
+cov_tbl %>%
+  arrange(indicator, city) %>%
+  knitr::kable()
 ```
 
